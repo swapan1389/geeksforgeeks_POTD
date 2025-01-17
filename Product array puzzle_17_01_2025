@@ -51,6 +51,40 @@ Time Complexity: O(n)
 Space Complexity: O(n)
 
 
+// Using two extra Array and without division operator
+
+public static int[] productExceptSelf(int arr[]) {
+        // code herr
+        int n=arr.length;
+        
+        int [] leftarrayproduct=new int [n];
+        int [] rightarrayproduct=new int [n];
+        int [] res=new int [n];
+        Arrays.fill(leftarrayproduct,1);
+        Arrays.fill(rightarrayproduct,1);
+        
+        // Calculate the left product from previous indexe
+        int left=1;
+        for(int i=0;i<n;i++){
+            leftarrayproduct[i]=left;
+            left*=arr[i];
+        }
+        // Calculate the right product after indexes
+        int right=1;
+        for(int i=n-1;i>=0;i--){
+            rightarrayproduct[i]=right;
+            right*=arr[i];
+        }
+        // Entry in result Array
+        
+        for(int i=0;i<n;i++){
+            res[i]=leftarrayproduct[i]*rightarrayproduct[i];
+        }
+        
+        return res;
+    }
+
+
 
 
 

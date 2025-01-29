@@ -1,0 +1,38 @@
+Implement Pow
+Implement the function power(b, e), which calculates b raised to the power of e (i.e. be).
+Examples:
+
+Input: b = 3.00000, e = 5
+Output: 243.00000
+Input: b = 0.55000, e = 3
+Output: 0.16638
+Input: b = -0.67000, e = -7
+Output: -16.49971
+Constraints:
+
+-100.0 < b < 100.0
+-10^9 <= e <= 10^9
+Either b is not zero or e > 0.
+-10^4 <= be <= 10^4
+Expected Complexities
+Time Complexity: O(log n)Auxiliary Space: O(log n)
+ double power(double b, int e) {
+        // code here
+        double ans=1.0;
+        long n=e;
+        if(n<0) n=-1*n;
+        while(n>0){
+            if(n%2==1){
+                ans*=b;
+                n=n-1;
+            }
+            else{
+                b=b*b;
+                n=n/2;
+                
+            }
+        }
+        
+        if(e<0) ans= 1.0/ans;
+        return ans;
+    }

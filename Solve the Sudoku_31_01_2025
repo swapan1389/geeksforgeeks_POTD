@@ -1,0 +1,58 @@
+Solve the Sudoku
+Given an incomplete Sudoku configuration in terms of a 9x9  2-D interger square matrix, mat[][], the task is to solve the Sudoku. It is guaranteed that the input Sudoku will have exactly one solution.
+A sudoku solution must satisfy all of the following rules:
+Each of the digits 1-9 must occur exactly once in each row.
+Each of the digits 1-9 must occur exactly once in each column.
+Each of the digits 1-9 must occur exactly once in each of the 9 3x3 sub-boxes of the grid.
+Note: Zeros represent blanks to be filled with numbers 1-9, while non-zero cells are fixed and cannot be changed.
+
+Examples:
+mat.size() = 9
+mat[i].size() = 9
+0 ≤ mat[i][j] ≤ 9
+Expected Complexities
+Time Complexity: O(9 ^ (n * n))Auxiliary Space: O(n)
+
+class Solution {
+    // Function to find a solved Sudoku.
+    static void solveSudoku(int[][] mat) {
+        // code here
+        sudokuHelper(mat);
+    }
+    
+    public static boolean sudokuHelper(int [][]mat){
+        for(int i=0;i<9;i++){
+            for(int j=0;j<9;j++){
+                if(mat[i][j]==0){
+                    for(int digit=1;digit<=9;digit++){
+                        if(isValid(mat,i,j,digit)){
+                            mat[i][j]=digit;
+                            if(sudokuHelper(mat)){
+                                return true;
+                            }
+                            else{
+                                mat[i][j]=0;
+                            }
+                        }
+                    }
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    
+    public static boolean isValid(int[][] mat,int row,int col,int digit){
+        for(int i=0;i<9;i++){
+            // Row wise checking
+            if(mat[row][i]==digit) return false;
+            
+            // Column wise checking
+            if(mat[i][col]==digit) return false;
+            
+            //  3X3 block wise
+            if(mat[3*(row/3)+(i/3)][3*(col/3)+i%3]==digit) return false;
+        }
+        
+        return true;
+    }

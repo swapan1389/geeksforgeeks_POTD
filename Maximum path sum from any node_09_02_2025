@@ -1,0 +1,48 @@
+Maximum path sum from any nod
+Given a binary tree, the task is to find the maximum path sum. The path may start and end at any node in the tree.
+Examples:
+Input: root[] = [10, 2, 10, 20, 1, N, -25, N, N, N, N, 3, 4]
+Output: 42
+Explanation: 
+Max path sum is represented using green colour nodes in the above binary tree.
+Input: root[] = [-17, 11, 4, 20, -2, 10]
+Output: 31
+Explanation: 
+Max path sum is represented using green colour nodes in the above binary tree.
+Constraints:
+1 ≤ number of nodes ≤ 10^3
+-10^4 ≤ node->data ≤ 10^4
+Expected Complexities
+Time Complexity: O(n)Auxiliary Space: O(h)
+
+class Solution {
+    // Function to return maximum path sum from any node in a tree.
+    int [] maxi=new int[1];
+    int findMaxSum(Node root) {
+        // your code goes here
+        maxi[0]=Integer.MIN_VALUE;
+        int singlepathsum=calculatesum(root,maxi);
+        
+        return maxi[0];
+    }
+    
+    public int calculatesum(Node root,int[] maxi){
+        if(root==null) return 0;
+        int leftsum=calculatesum(root.left,maxi);
+        int rightsum=calculatesum(root.right,maxi);
+        
+        if(leftsum>0 && rightsum>0){
+            maxi[0]=Math.max(maxi[0],leftsum+rightsum+root.data);
+        }
+        else if(leftsum<0 && rightsum<0){
+            maxi[0]=Math.max(maxi[0],root.data);
+        }
+        
+        else{
+            maxi[0]=Math.max(maxi[0],root.data+Math.max(leftsum,rightsum));
+            
+        }
+        
+        return Math.max(0,root.data+Math.max(leftsum,rightsum)); //  If root is negative then do not return negative value return 0
+    }
+}

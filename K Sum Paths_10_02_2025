@@ -1,0 +1,116 @@
+K Sum Paths
+Given a binary tree and an integer k, determine the number of downward-only paths where the sum of the node values in the path equals k. A path can start and end at any node within the tree but must always move downward (from parent to child).
+Examples:
+Input: k = 7   
+Output: 3
+Explanation: The following paths sum to k 
+Input: k = 3
+   1
+  /  \
+2     3
+Output: 2
+Explanation:
+Path 1 : 1 -> 2 (Sum = 3)
+Path 2 : 3 (Sum = 3)
+Constraints:
+
+1 ≤ number of nodes ≤ 104
+-100 ≤ node value ≤ 100
+-10^9 ≤ k ≤ 10^9
+Expected Complexities
+Time Complexity: O(n)Auxiliary Space: O(h)
+
+Approach 1:::::::Giving TLE
+For each node, consider it as the starting point and find all downward paths from it.
+Use a helper function to compute all path sums starting from a given node.
+Recursively call the function on left and right subtrees.
+class Solution {
+    // public int sumK(Node root, int k) {
+    //     // code here
+        
+    // }
+    
+    public int sumK(Node root, int k) {
+        if (root == null) return 0;
+
+        // Count paths starting from this node
+        int count = countFromNode(root, k, 0);
+
+        // Recur for left and right subtrees
+        count += sumK(root.left, k);
+        count += sumK(root.right, k);
+
+        return count;
+    }
+
+    private int countFromNode(Node node, int k, int sum) {
+        if (node == null) return 0;
+
+        sum += node.data;
+        int count = (sum == k) ? 1 : 0;
+
+        count += countFromNode(node.left, k, sum);
+        count += countFromNode(node.right, k, sum);
+
+        return count;
+    }
+}
+
+Approach 2:
+Use a list (d) to store the nodes in the current path while traversing.
+For each node:
+Insert the node into d.
+Compute sums backward from the last inserted node.
+If a sum equals k, increase the count.
+Recur for left and right subtrees.
+Backtrack by removing the last inserted node before returning.
+
+class Solution {
+    public int sumK(Node root, int k) {
+        // code here
+        ArrayList<Integer> path=new ArrayList<>();
+        return helper(root,k,path);
+    }
+    
+    public int helper(Node root,int k,ArrayList<Integer> path){
+        if(root==null) return 0;
+        path.add(root.data);
+        int sum=0;
+        int count=0;
+        
+        for(int i=path.size()-1;i>=0;i--){
+            sum+=path.get(i);
+            if(sum==k) count++;
+        }
+        
+        count+=helper(root.left,k,path);
+        count+=helper(root.right,k,path);
+        path.remove(path.size()-1);
+        return count;
+    }
+}
+
+Approach 3: O(n)
+class Solution {
+    public int sumK(Node root, int k) {
+        // code here
+        
+        HashMap<Integer,Integer> prefixmap=new HashMap<>();
+        prefixmap.put(0,1);
+        return helper(root,0,k,prefixmap);
+    }
+    
+    public int helper(Node root,int currsum,int k,HashMap<Integer,Integer> prefixmap){
+        if(root==null) return 0;
+        currsum+=root.data;
+        int count=prefixmap.getOrDefault(currsum-k,0);
+        
+        prefixmap.put(currsum,prefixmap.getOrDefault(currsum,0)+1);
+        
+        count+=helper(root.left,currsum,k,prefixmap);
+        count+=helper(root.right,currsum,k,prefixmap);
+        prefixmap.put(currsum,prefixmap.get(currsum)-1);
+        
+        return count;
+    }
+}

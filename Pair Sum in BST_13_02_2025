@@ -1,0 +1,170 @@
+Pair Sum in BST
+Given a Binary Search Tree(BST) and a target. Check whether there's a pair of Nodes in the BST with value summing up to the target. 
+Examples:
+Input: root = [7, 3, 8, 2, 4, N, 9], target = 12
+Output: True
+Explanation: In the binary tree above, there are two nodes (8 and 4) that add up to 12.
+
+Input: root = [9, 5, 10, 2, 6, N, 12], target = 23
+Output: False
+Explanation: In the binary tree above, there are no such two nodes exists that add up to 23.
+
+Constraints:
+1 ≤ Number of Nodes ≤ 10^5
+1 ≤ target ≤ 10^6
+Expected Complexities
+Time Complexity: O(n)Auxiliary Space: O(h)
+Appraoch 1:
+In-order Traversal (helper function):
+It stores the elements of the BST in a sorted ArrayList<Integer> list.
+Checking for Pair Sum:
+It builds a HashMap<Integer, Integer> to count occurrences of each number.
+It iterates through the list to check if target - currentElement exists in the map.
+boolean findTarget(Node root, int target) {
+        // Write your code here
+        ArrayList<Integer> list=new ArrayList<>();
+        HashMap<Integer,Integer> map=new HashMap<>();
+        helper(root,list);
+        
+        for(int i=0;i<list.size();i++){
+            map.put(list.get(i),map.getOrDefault(list.get(i),0)+1);
+        }
+        
+        
+        for(int i=0;i<list.size();i++){
+            if(map.containsKey(target-list.get(i)) && (target-list.get(i) !=list.get(i))){
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    public void helper(Node root,ArrayList<Integer> list){
+        if(root==null) return;
+        
+        helper(root.left,list);
+        list.add(root.data);
+        helper(root.right,list);
+    }
+
+Apprach 2:
+ In-order Traversal (O(n)):
+
+The helper function stores BST elements in sorted order in list.
+✅ Two-Pointer Search (O(n)):
+Since BST in-order traversal gives a sorted array, you use a two-pointer approach to find the target sum in O(n) time.
+boolean findTarget(Node root, int target) {
+        // Write your code here
+        ArrayList<Integer> list=new ArrayList<>();
+        helper(root,list);
+        
+        int left=0;
+        int right=list.size()-1;
+        
+        while(left<right){
+            int sum=list.get(left)+list.get(right);
+            if(sum==target) return true;
+            if(sum<target) left++;
+            if(sum>target) right--;
+        }
+        
+      
+        return false;
+    }
+    
+    public void helper(Node root,ArrayList<Integer> list){
+        if(root==null) return;
+        
+        helper(root.left,list);
+        list.add(root.data);
+        helper(root.right,list);
+    }
+
+Apprach 2:
+Perform an in-order traversal of the BST to maintain the ascending order of elements.
+Use a HashSet to store visited values.
+For each node, check if target - node's value exists in the HashSet.
+If found, return true; otherwise, insert the node's value into the HashSet.
+If traversal completes without finding a pair, return false.
+ boolean findTarget(Node root, int target) {
+        // Write your code here
+         HashSet<Integer> set = new HashSet<>();
+        return inorder(root, set, target);
+        
+    }
+    
+     private static boolean inorder(Node node, HashSet<Integer> set, int target) {
+        if (node == null) return false;
+
+        // Check in left subtree
+        if (inorder(node.left, set, target)) return true;
+
+        // Check if (target - current node value) exists in the set
+        if (set.contains(target - node.data)) return true;
+        
+        // Add current node value to the set
+        set.add(node.data);
+
+        // Check in right subtree
+        return inorder(node.right, set, target);
+    }
+
+Optimal Approach:
+BST Iterator (BSTIterator class):
+
+Uses a stack to perform in-order (LNR) or reverse in-order (RNL) traversal iteratively, depending on the direction (reverse flag).
+Maintains O(h) auxiliary space instead of storing all nodes in an ArrayList (O(n) space in previous approaches).
+Two-Pointer Approach Using Iterators:
+
+BSTIterator l = new BSTIterator(root, false); → Left to Right (In-order) (smallest to largest).
+BSTIterator r = new BSTIterator(root, true); → Right to Left (Reverse In-order) (largest to smallest).
+Uses two-pointer technique (i and j) similar to the sorted ArrayList method but without storing all elements explicitly.
+Moves i forward if sum < target, moves j backward if sum > target.
+
+class BSTIterator{
+    private Stack<Node> st=new Stack<>();
+    boolean reverse=true;
+    BSTIterator(Node root,boolean ISreverse){
+        reverse=ISreverse;
+        pushAll(root);
+    }
+    
+    public boolean hasNext(){
+        return !st.isEmpty();
+    }
+    
+    public int next(){
+        Node temp=st.pop();
+        if(reverse==false) pushAll(temp.right);
+        else pushAll(temp.left);
+        return temp.data;
+    }
+    
+    private void pushAll(Node node){
+        while(node!=null){
+            st.push(node);
+            if(reverse==true) node=node.right;
+            else node=node.left;
+        }
+    }
+}
+class Solution {
+    boolean findTarget(Node root, int target) {
+        // Write your code here
+        if(root==null) return false;
+        // For left
+        BSTIterator l=new BSTIterator(root,false);
+        BSTIterator r=new BSTIterator(root,true);
+        
+        int i=l.next();
+        int j=r.next();
+        while(i<j){
+            if(i+j==target) return true;
+            if(i+j<target) i=l.next();
+            else j=r.next();
+        }
+        
+        return false;
+    }
+}

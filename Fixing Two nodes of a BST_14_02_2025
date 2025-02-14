@@ -1,0 +1,126 @@
+Fixing Two nodes of a BST
+Given the root of a Binary search tree(BST), where exactly two nodes were swapped by mistake. Your task is to fix (or correct) the BST by swapping them back. Do not change the structure of the tree.
+Note: It is guaranteed that the given input will form BST, except for 2 nodes that will be wrong. All changes must be reflected in the original Binary search tree(BST).
+Examples :
+
+Input: root = [10, 5, 8, 2, 20]
+Output: 1
+Explanation: The nodes 20 and 8 were swapped. 
+
+Input: root = [5, 10, 20, 2, 8] 
+Output: 1 
+Explanation: The nodes 10 and 5 were swapped.
+
+Constraints:
+1 ≤ Number of nodes ≤ 10^3
+Company Tags
+
+Expected Complexities
+Time Complexity: O(n)Auxiliary Space: O(h)
+
+
+Approach 1:Brute Force Approach
+Perform an inorder traversal and store all the nodes in an ArrayList<Node> original.
+Copy the list to another list ArrayList<Node> sorted and sort it based on node values.
+Identify the two swapped nodes by comparing original and sorted.
+Swap the values of these two nodes to restore the BST.
+
+class Solution {
+    void correctBST(Node root) {
+        // code here.
+        
+        ArrayList<Node> original=new ArrayList<>();
+        inorder(root,original);
+        
+        ArrayList<Node> sorted=new ArrayList<>(original);
+        sorted.sort(Comparator.comparingInt(Node -> Node.data));
+        
+         // Find the two swapped nodes
+        Node first = null, second = null;
+        for (int i = 0; i < original.size(); i++) {
+            if (original.get(i).data != sorted.get(i).data) {
+                if (first == null) {
+                    first = original.get(i);
+                } else {
+                    second = original.get(i);
+                }
+            }
+        }
+        
+        // Swap their values
+        if (first != null && second != null) {
+            int temp = first.data;
+            first.data= second.data;
+            second.data = temp;
+        }
+        
+    }
+    
+    public void inorder(Node root,ArrayList<Node> original){
+        if(root==null) return;
+        inorder(root.left,original);
+        original.add(root);
+        inorder(root.right,original);
+        
+    }
+}
+
+Approach 2: Optimal Approach
+This approach fixes the BST in O(n) time and O(h) space by using a single inorder traversal to find the misplaced nodes without storing the entire tree.
+Key Idea:
+In a correct BST, the inorder traversal produces a sorted sequence.
+If two nodes are swapped, the sequence will break at one or two places:
+Case 1: The swapped nodes are not adjacent (first and last).
+Case 2: The swapped nodes are adjacent (first and middle).
+We use recursion to traverse the BST and identify these misplaced nodes.
+
+class Solution {
+    private Node first;
+    private Node middle;
+    private Node prev;
+    private Node last;
+    void correctBST(Node root) {
+        // code here.
+        first=middle=last=null;
+        prev=new Node(Integer.MIN_VALUE);
+        helper(root);
+        
+        // if nodes are not adjacent
+        if(first!=null && last !=null){
+            int temp=first.data;
+            first.data=last.data;
+            last.data=temp;
+            
+        }
+        
+        else if(first!=null && middle !=null){
+            int temp=first.data;
+            first.data=middle.data;
+            middle.data=temp;
+        }
+        
+    }
+    
+    public void helper(Node root){
+        if(root==null) return;
+        helper(root.left);
+        
+        if(prev!=null && root.data<prev.data){
+            
+            // It is for the first violation prev will be the first element and root is 
+            // middle
+            if(first==null){
+                first=prev;
+                middle=root;
+            }
+            // it is for the second violation
+            else{
+                last=root;
+            }
+        }
+        
+        // Marks this node is as previous
+        prev=root;
+        helper(root.right);
+    }
+}

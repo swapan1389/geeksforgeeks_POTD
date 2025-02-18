@@ -1,0 +1,107 @@
+K Closest Points to Origin
+Given an array of points where each point is represented as points[i] = [xi, yi] on the X-Y plane and an integer k, return the k closest points to the origin (0, 0).
+The distance between two points on the X-Y plane is the Euclidean distance, defined as: 
+sqrt( (x2 - x1)2 + (y2 - y1)2 )
+Note: You can return the k closest points in any order, driver code will sort them before printing.
+Examples:
+Input: k = 2, points[] = [[1, 3], [-2, 2], [5, 8], [0, 1]]
+Output: [[-2, 2], [0, 1]]
+Explanation: The Euclidean distances from the origin are:
+Point (1, 3) = sqrt(10)
+Point (-2, 2) = sqrt(8)
+Point (5, 8) = sqrt(89)
+Point (0, 1) = sqrt(1)
+The two closest points to the origin are [-2, 2] and [0, 1].
+
+Input: k = 1, points = [[2, 4], [-1, -1], [0, 0]]
+Output: [[0, 0]]
+Explanation: The Euclidean distances from the origin are:
+Point (2, 4) = sqrt(20)
+Point (-1, -1) = sqrt(2)
+Point (0, 0) = sqrt(0)
+The closest point to origin is (0, 0).
+
+Constraints:
+1 <= k <= points.size() <= 10^5
+-10^4 <= xi, yi <= 10^4
+
+Expected Complexities
+Time Complexity: O (N log K)Auxiliary Space: O (K)
+
+Approach 1:
+Custom Pair Class: Stores the distance (Euclidean squared) and the point.
+Min Heap (PriorityQueue<Pair>):
+Stores pairs sorted by smallest distance first (a.distance - b.distance).
+Heap Operations:
+Push all points with their distances.
+Extract the top k elements (smallest distances).
+
+class Pair{
+    int distance;
+    int [] point;
+    
+    Pair(int distance,int [] point){
+        this.distance=distance;
+        this.point=point;
+    }
+}
+class Solution {
+    public int[][] kClosest(int[][] points, int k) {
+        // Your code here
+        
+        int [][] result=new int [k][2];
+        
+        PriorityQueue<Pair> pq=new PriorityQueue<>((a,b)->Integer.compare(a.distance,b.distance));
+        
+        for(int i=0;i<points.length;i++){
+            
+            int distance=points[i][0]*points[i][0] + points[i][1]*points[i][1];
+            
+            pq.add(new Pair(distance,points[i]));
+            
+        }
+        
+        int i=0;
+        while(i<k){
+            Pair p=pq.poll();
+            result[i]=p.point;
+            i++;
+        }
+        
+        return result;
+    }
+}
+
+Approach 2:
+Use a Max Heap (PriorityQueue) to store K closest points.
+Comparator is based on the Euclidean distance squared (x² + y² to avoid unnecessary sqrt calculations).
+Iterate through points:
+Add each point to the heap.
+If the heap size exceeds K, remove the farthest point.
+Return the remaining K points.
+
+public int[][] kClosest(int[][] points, int k) {
+        // Your code here
+        
+         // Max-Heap to store points, sorted by distance in descending order
+        PriorityQueue<int[]> maxHeap = new PriorityQueue<>((a, b) -> 
+            Integer.compare((b[0] * b[0] + b[1] * b[1]), (a[0] * a[0] + a[1] * a[1]))
+        );
+
+        // Iterate through points
+        for (int[] point : points) {
+            maxHeap.add(point);
+            if (maxHeap.size() > k) {
+                maxHeap.poll(); // Remove the farthest point
+            }
+        }
+
+        // Extract k closest points
+        int[][] result = new int[k][2];
+        for (int i = 0; i < k; i++) {
+            result[i] = maxHeap.poll();
+        }
+
+        return result;
+    }
+

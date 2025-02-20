@@ -1,0 +1,133 @@
+Find median in a stream
+Given a data stream arr[] where integers are read sequentially, the task is to determine the median of the elements encountered so far after each new integer is read.
+There are two cases for median on the basis of data set size.
+1. If the data set has an odd number then the middle one will be consider as median.
+2. If the data set has an even number then there is no distinct middle value and the median will be the arithmetic mean of the two middle values.
+Examples:
+Input:  arr[] = [5, 15, 1, 3, 2, 8]
+Output: [5.0, 10.0, 5.0, 4.0, 3.0, 4.0] 
+Explanation: 
+After reading 1st element of stream – 5 -> median = 5.0
+After reading 2nd element of stream – 5, 15 -> median = (5+15)/2 = 10.0 
+After reading 3rd element of stream – 5, 15, 1 -> median = 5.0
+After reading 4th element of stream – 5, 15, 1, 3 ->  median = (3+5)/2 = 4.0
+After reading 5th element of stream – 5, 15, 1, 3, 2 -> median = 3.0
+After reading 6th element of stream – 5, 15, 1, 3, 2, 8 ->  median = (3+5)/2 = 4.0
+
+Input: arr[] = [2, 2, 2, 2]
+Output: [2.0, 2.0, 2.0, 2.0]
+Explanation: 
+After reading 1st element of stream – 2 -> median = 2.0
+After reading 2nd element of stream – 2, 2 -> median = (2+2)/2 = 2.0
+After reading 3rd element of stream – 2, 2, 2 -> median = 2.0
+After reading 4th element of stream – 2, 2, 2, 2 ->  median = (2+2)/2 = 2.0
+Constraints:
+1 <= arr.size() <= 10^5
+1 <= x <= 10^6
+Expected Complexities
+Time Complexity: O(n log n)Auxiliary Space: O(n)
+
+Naïve Approach (Brute Force): Time Complexity: O(n² log n)  and Space Complexity: O(n)
+Steps:
+Create a helper list (helperlist) to store numbers seen so far.
+For each number in the stream:
+Insert the number into helperlist.
+Sort helperlist.
+Find the median:
+If size is odd → middle element is the median.
+If size is even → average of two middle elements.
+Store the median in the result list (anslist).
+Return the result list.
+
+Time & Space Complexity:
+Time Complexity: O(n² log n) (sorting at each step takes O(n log n), repeated for n elements).
+Space Complexity: O(n) (for storing elements in helperlist).
+
+class Solution {
+    public ArrayList<Double> getMedian(int[] arr) {
+        // code here
+        ArrayList<Integer> helperlist=new ArrayList<>();
+        ArrayList<Double> anslist=new ArrayList<>();
+        
+        for(int num:arr){
+            helperlist.add(num);
+            Collections.sort(helperlist);
+            
+            double median;
+            
+            int size=helperlist.size();
+            
+            if(size%2==1){
+                median=helperlist.get(size/2);
+            }
+            
+            else{
+                median=(helperlist.get(size/2)+helperlist.get(size/2-1))/2.0;
+            }
+            
+            anslist.add(median);
+        }
+        
+        return anslist;
+    }
+}
+
+Optimized Approach (Using Two Heaps): Time Complexity: O(n log n) and pace Complexity: O(n)
+Steps:
+Use two heaps:
+Max heap (maxHeap): stores the smaller half of elements.
+Min heap (minHeap): stores the larger half of elements.
+For each number in the stream:
+Insert the number into the correct heap.
+Balance the heaps so that their sizes differ by at most 1.
+Find the median:
+If both heaps have equal size → median is the average of their top elements.
+Otherwise → median is the top of maxHeap.
+Store the median in the result list (ans).
+Return the result list.
+Time & Space Complexity:
+Time Complexity: O(n log n) (heap insertion/removal takes O(log n), repeated for n elements).
+Space Complexity: O(n) (for storing elements in heaps).
+
+
+class Solution {
+    public ArrayList<Double> getMedian(int[] arr) {
+        // code here
+        
+        ArrayList<Double> ans=new ArrayList<>();
+        PriorityQueue<Integer> maxheap=new PriorityQueue<>(Collections.reverseOrder());
+        PriorityQueue<Integer> minheap=new PriorityQueue<>();
+        
+        // adding
+        
+        for(int num:arr){
+            
+            // adding
+            
+            if(maxheap.isEmpty()||num<=maxheap.peek()){
+                maxheap.add(num);
+            }
+            else{
+                minheap.add(num);
+            }
+            
+            // Balancing
+            if(maxheap.size()>minheap.size()+1){
+                minheap.add(maxheap.poll());
+            }
+            else if(minheap.size()>maxheap.size()){
+                maxheap.add(minheap.poll());
+            }
+            
+            // Get Median
+            
+            if(minheap.size()==maxheap.size()){
+                ans.add((maxheap.peek()+minheap.peek())/2.0);
+            }
+            else{
+                ans.add((double)maxheap.peek());
+            }
+        }
+        return ans;
+    }
+}

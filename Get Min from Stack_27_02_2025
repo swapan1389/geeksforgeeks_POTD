@@ -1,0 +1,175 @@
+Get Min from Stack
+Given q queries, You task is to implement the following four functions for a stack:
+
+push(x) – Insert an integer x onto the stack.
+pop() – Remove the top element from the stack.
+peek() - Return the top element from the stack. If the stack is empty, return -1.
+getMin() – Retrieve the minimum element from the stack in O(1) time. If the stack is empty, return -1.
+Each query can be one of the following:
+
+1 x : Push x onto the stack.
+2 : Pop the top element from the stack.
+3: Return the top element from the stack. If the stack is empty, return -1.
+4: Return the minimum element from the stack.
+Examples:
+
+Input: q = 7, queries = [[1, 2], [1, 3], [3], [2], [4], [1, 1], [4]]
+Output: [3, 2, 1]
+Explanation: 
+push(2): Stack is [2]
+push(3): Stack is [2, 3]
+peek(): Top element is 3
+pop(): Removes 3, stack is [2]
+getMin(): Minimum element is 2
+push(1): Stack is [2, 1]
+getMin(): Minimum element is 1
+Input: q = 4, queries = [[1, 4], [1, 2], [4], [3]]
+Output: [2, 2]
+Explanation: 
+push(4): Stack is [4]
+push(2): Stack is [4, 2]
+getMin(): Minimum element is 2
+peek(): Top element is 2
+
+Input: q = 5, queries = [[1, 10], [4], [1, 5], [4], [2]]
+Output: [10, 5]
+Explanation: 
+push(10): Stack is [10]
+getMin(): Minimum element is 10
+push(5): Stack is [10, 5]
+getMin(): Minimum element is 5
+pop(): Removes 5, stack is [10]
+
+Constraints:
+1 <= q <= 10^5
+0 <= values on the stack <= 10^9
+
+Expected Complexities
+Time Complexity: O(1)Auxiliary Space: O(1)
+
+Approach 1: Time Complexity: O(1) for all operations.Space Complexity: O(n) due to storing pairs.
+Initialize a stack to store pairs of values: (element, minimum so far).
+Push Operation:
+If the stack is empty, push (element, element).
+Otherwise, push (element, min(previous min, element)).
+Pop Operation: Remove the top element from the stack if not empty.
+Peek Operation: Return the top element’s value; return -1 if empty.
+GetMin Operation: Return the minimum stored with the top element; return -1 if empty.
+
+class Pair{
+    int val;
+    int min;
+    Pair(int val,int min){
+        this.val=val;
+        this.min=min;
+    }
+}
+class Solution {
+    Stack<Pair> st=new Stack<>();
+    public Solution() {}
+
+    // Add an element to the top of Stack
+    public void push(int x) {
+        // code here
+        if(st.isEmpty()){
+            st.push(new Pair(x,x));
+        }
+        
+        else{
+            st.push(new Pair(x,Math.min(st.peek().min,x)));
+        }
+    }
+
+    // Remove the top element from the Stack
+    public void pop() {
+        // code here
+        if(!st.isEmpty())  st.pop();
+    }
+
+    // Returns top element of the Stack
+    public int peek() {
+        // code here
+        if(st.isEmpty()) return -1;
+        else{
+            return st.peek().val;
+        }
+    }
+
+    // Finds minimum element of Stack
+    public int getMin() {
+        // code here
+        
+        if(st.isEmpty()) return -1;
+        return st.peek().min;
+    }
+
+Approach 2: Time Complexity: O(1) for all operations.Space Complexity: O(1) since no extra storage is used apart from the stack.
+Initialize a stack and a variable to store the minimum element.
+Push Operation:
+If the stack is empty, store the element as the minimum.
+If the new element is smaller, push a modified value and update the minimum.
+Pop Operation:
+If the top value is modified, update the minimum using a derived formula.
+Otherwise, remove normally.
+Peek Operation:
+If the top is a modified value, return the stored minimum.
+Otherwise, return the top value.
+GetMin Operation: Return the stored minimum.
+
+class Solution {
+    Stack<Integer> st;
+    int minel;
+    public Solution() {
+        st=new Stack<>();
+        minel=Integer.MAX_VALUE;
+    }
+
+    // Add an element to the top of Stack
+    public void push(int x) {
+        // code here
+        if(st.isEmpty()){
+            st.push(x);
+            minel=x;
+        }
+        else{
+            if(x>minel){
+                st.push(x);
+            }
+            else{
+                int modified_Val=2*x-minel;
+                st.push(modified_Val);
+                minel=x;
+            }
+        }
+    }
+
+    // Remove the top element from the Stack
+    public void pop() {
+        // code here
+        if(!st.isEmpty()){
+            if(st.peek()<minel){
+                int popped=minel;
+                minel=2*popped-st.peek();
+                st.pop();
+            }
+            else{
+                st.pop();
+            }
+        }
+    }
+
+    // Returns top element of the Stack
+    public int peek() {
+        // code here
+        if(st.isEmpty()) return -1;
+        if(st.peek()<minel) return minel;
+        else return st.peek();
+    }
+
+    // Finds minimum element of Stack
+    public int getMin() {
+        // code here
+        if(st.isEmpty()) return -1;
+        return minel;
+    }
+}

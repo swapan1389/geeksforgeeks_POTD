@@ -1,0 +1,107 @@
+Longest Bounded-Difference Subarray
+Given an array of positive integers arr[] and a non-negative integer x, the task is to find the longest sub-array where the absolute difference between any two elements is not greater than x.
+If multiple such subarrays exist, return the one that starts at the smallest index.
+
+Examples: 
+
+Input: arr[] = [8, 4, 2, 6, 7], x = 4 
+Output: [4, 2, 6] 
+Explanation: The sub-array described by index [1..3], i.e. [4, 2, 6] contains no such difference of two elements which is greater than 4.
+Input: arr[] = [15, 10, 1, 2, 4, 7, 2], x = 5 
+Output: [2, 4, 7, 2] 
+Explanation: The sub-array described by indexes [3..6], i.e. [2, 4, 7, 2] contains no such difference of two elements which is greater than 5. 
+Constraints:
+1 <= arr.size() <= 10^5
+1 <= arr[i] <= 10^9
+0 <= x<= 10^9
+
+Expected Complexities
+Time Complexity: O(n)Auxiliary Space: O(n)
+
+Brute Force Approach:Time Compexity O(N). Space Compexity O(1)
+Steps:
+Iterate over all possible starting indices.
+For each starting index, iterate over all possible ending indices.
+Extract the subarray from the current start to the current end.
+Check if the absolute difference between any two elements in this subarray is within the given limit.
+If the condition holds and the length is greater than the previously stored maximum, update the result.
+Return the longest valid subarray found.
+public ArrayList<Integer> longestSubarray(int[] arr, int x) {
+        // code here
+        
+        int n=arr.length;
+        int maxlength=0;
+        int start=0;
+        int end=0;
+        
+        for(int i=0;i<n;i++){
+            int min=arr[i];
+            int max=arr[i];
+            for(int j=i;j<n;j++){
+                min=Math.min(min,arr[j]);
+                max=Math.max(max,arr[j]);
+                if(max-min>x){
+                    break;
+                }
+                
+                int currentlength=j-i+1;
+                if(currentlength>maxlength){
+                    start=i;
+                    end=j;
+                    maxlength=currentlength;
+                }
+            }
+        }
+        
+        ArrayList<Integer> ans=new ArrayList<>();
+        for(int k=start;k<=end;k++){
+            ans.add(arr[k]);
+        }
+        
+        return ans;
+        
+    }
+
+Optimized Approach:Time complexity O(nlogn). Space Complexity O(n);
+Steps:
+Use two pointers to represent a sliding window.
+Expand the window by moving the right pointer and adding the new element.
+Maintain a data structure that efficiently tracks the minimum and maximum values in the window.
+If the absolute difference exceeds the limit, shrink the window from the left.
+Update the result when a longer valid subarray is found.
+Return the longest valid subarray.
+public ArrayList<Integer> longestSubarray(int[] arr, int x) {
+        // code here
+        int n=arr.length;
+        int left=0;
+        int maxlength=0;
+        int startIdx=0;
+        TreeMap<Integer,Integer> windowmap=new TreeMap<>();
+        
+        for(int right=0;right<n;right++){
+            windowmap.put(arr[right],windowmap.getOrDefault(arr[right],0)+1);
+            
+            while(!windowmap.isEmpty() && windowmap.lastKey()-windowmap.firstKey()>x){
+                // Remove elements from left to maintain the validity of the window
+                windowmap.put(arr[left],windowmap.get(arr[left])-1);
+                if(windowmap.get(arr[left])==0){
+                    windowmap.remove(arr[left]);
+                }
+                
+                // shrink the left pointer
+                left++;
+            }
+            
+            if(right-left+1>maxlength){
+                maxlength=right-left+1;
+                startIdx=left;
+            }
+        }
+        
+        ArrayList<Integer> ans=new ArrayList<>();
+        for(int i=startIdx;i<startIdx+maxlength;i++){
+            ans.add(arr[i]);
+        }
+        
+        return ans;
+    }

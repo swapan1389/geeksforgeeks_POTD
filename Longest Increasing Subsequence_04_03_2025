@@ -1,0 +1,166 @@
+Longest Increasing Subsequence
+Given an array arr[] of non-negative integers, the task is to find the length of the Longest Strictly Increasing Subsequence (LIS).
+A subsequence is strictly increasing if each element in the subsequence is strictly less than the next element.
+Examples:
+Input: arr[] = [5, 8, 3, 7, 9, 1]
+Output: 3
+Explanation: The longest strictly increasing subsequence could be [5, 7, 9], which has a length of 3.
+
+Input: arr[] = [0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15]
+Output: 6
+Explanation: One of the possible longest strictly increasing subsequences is [0, 2, 6, 9, 13, 15], which has a length of 6.
+
+Input: arr[] = [3, 10, 2, 1, 20]
+Output: 3
+Explanation: The longest strictly increasing subsequence could be [3, 10, 20], which has a length of 3.
+
+Constraints:
+1 ≤ arr.size() ≤ 10^3
+0 ≤ arr[i] ≤ 10^6
+
+Expected Complexities
+Time Complexity: O(n log n)Auxiliary Space: O(n)
+
+Approach1:Time Complexity:O(2ⁿ) → Exponential, as each element has two choices (include or exclude).Space Complexity:O(n) → Due to recursive function call stack.
+Steps:
+Start from index 0 and recursively check two cases:
+Exclude the current element and move to the next index.
+Include the current element only if it is greater than the previous included element.
+Return the maximum of the two cases.
+Base Case: If Idx == n, return 0 (end of the array reached).
+static int lis(int arr[]) {
+        // code here
+        int n=arr.length;
+        return LisRecursion(arr,n,0,-1);
+        
+        
+    }
+    
+    public static int LisRecursion(int [] arr,int n, int Idx,int prevIdx){
+        //// Base case: If we reach the end of the array
+        if(Idx==n) return 0;
+        
+         // Case 1: Exclude the current element and move to the next
+         int exclude=LisRecursion(arr,n,Idx+1,prevIdx);
+         
+           // Case 2: Include the current element if it's greater than the previous indexed element
+           int include=0;
+           if(prevIdx==-1 || arr[Idx]>arr[prevIdx]){
+               include=1+LisRecursion(arr,n,Idx+1,Idx);
+           }
+           
+             // Return the maximum of the two cases
+             return Math.max(exclude, include);
+           
+           
+    }
+Approach 2( Memoization (Top-Down DP)): Time Complexity:O(n²) → As there are O(n²) possible states (Idx from 0 to n and prevIdx from -1 to n).
+Space Complexity:O(n²) + O(n) → DP table (O(n²)) + recursion stack (O(n)).
+Steps:
+Create a dp[][] array to store computed results (dp[prevIdx+1][Idx]).
+Modify the recursive approach:
+If dp[prevIdx+1][Idx] != -1, return the stored value to avoid recomputation.
+Compute LIS using recursion as in the previous approach but store results.
+Base Case: If Idx == n, return 0.
+static int[][] dp;
+    static int lis(int arr[]) {
+        // code here
+        int n=arr.length;
+        dp=new int[n+1][n];
+        
+        for(int i=0;i<=n;i++){
+            for(int j=0;j<n;j++){
+                dp[i][j]=-1;
+            }
+        }
+        
+        return LisRecursion(arr,n,0,-1);
+        
+        
+    }
+    
+    public static int LisRecursion(int [] arr,int n, int Idx,int prevIdx){
+        //// Base case: If we reach the end of the array
+        if(Idx==n) return 0;
+        
+        // If result is already computed, return it
+        if(dp[prevIdx+1][Idx]!=-1) return dp[prevIdx+1][Idx];
+        
+         // Case 1: Exclude the current element and move to the next
+         int exclude=LisRecursion(arr,n,Idx+1,prevIdx);
+         
+           // Case 2: Include the current element if it's greater than the previous indexed element
+           int include=0;
+           if(prevIdx==-1 || arr[Idx]>arr[prevIdx]){
+               include=1+LisRecursion(arr,n,Idx+1,Idx);
+           }
+           // Store result in dp table and return
+             return dp[prevIdx+1][Idx]=Math.max(exclude, include);
+           
+           
+    }
+Approach 3(Dynamic Programming (Bottom-Up)):Time Complexity:O(n²) → Due to the nested loop.Space Complexity:O(n) → dp[] array.
+Steps:
+Create a dp[] array where dp[i] stores the length of LIS ending at index i.
+Initialize dp[i] = 1 because every element alone is an increasing subsequence.
+Use two loops:
+Outer loop (i) iterates from 1 to n-1.
+Inner loop (j) iterates from 0 to i-1:
+If arr[j] < arr[i], update dp[i] = max(dp[i], dp[j] + 1).
+Track the maximum LIS found so far (maxlength).
+ static int lis(int arr[]) {
+        // code here
+        int n=arr.length;
+        if(n==0) return 0;
+        
+        int[] dp=new int[n];// DP array to store LIS length at each index
+        Arrays.fill(dp,1); // Every element alone is an increasing subsequence of length 1
+        
+        int maxlength=1;// Variable to track the longest LIS
+        
+        for(int i=1;i<n;i++){ // Iterate through the array
+            for(int j=0;j<i;j++){ // Check all previous elements
+                if(arr[j]<arr[i]){ // If arr[j] can be included in LIS ending at arr[i]
+                    dp[i]=Math.max(dp[i],dp[j]+1); // Update LIS length for arr[i]
+                }
+            }
+            maxlength=Math.max(maxlength,dp[i]);// Track the maximum LIS found so far
+        }
+        
+        return maxlength; // Return the longest increasing subsequence length
+        
+    }
+
+Approach 4( Binary Search + Greedy (Patience Sorting)) : Time Complexity:O(n log n) → Binary search (O(log n)) for each element (O(n)).Space Complexity:O(n) → List storage.
+Steps:
+Create an empty list to store increasing elements.
+For each element in arr:
+Use Collections.binarySearch() to find the position where the element should be placed.
+If pos < 0, convert it to a valid index (pos = -(pos + 1)).
+If pos == list.size(), append the element (extend the sequence).
+Otherwise, replace list[pos] with num to maintain the LIS sequence.
+The length of the list at the end gives the LIS.
+static int lis(int arr[]) {
+        // code here
+        ArrayList<Integer> list=new ArrayList<>();
+        for(int num:arr){
+            int pos=Collections.binarySearch(list, num);
+            
+            if(pos<0){ // Convert negative index to insertion position
+            pos=-(pos+1);
+                
+            }
+            
+            if(pos==list.size()){
+                list.add(num);// Append if larger than last element
+            }
+            
+            else{
+                list.set(pos,num);// Replace element to maintain the sequence
+            }
+        }
+        
+        return list.size();
+        
+        
+    }

@@ -1,0 +1,161 @@
+Longest Common Subsequence
+Given two strings s1 and s2, return the length of their longest common subsequence (LCS). If there is no common subsequence, return 0.
+
+A subsequence is a sequence that can be derived from the given string by deleting some or no elements without changing the order of the remaining elements. For example, "ABE" is a subsequence of "ABCDE".
+
+Examples:
+
+Input: s1 = "ABCDGH", s2 = "AEDFHR"
+Output: 3
+Explanation: The longest common subsequence of "ABCDGH" and "AEDFHR" is "ADH", which has a length of 3.
+
+Input: s1 = "ABC", s2 = "AC"
+Output: 2
+Explanation: The longest common subsequence of "ABC" and "AC" is "AC", which has a length of 2.
+
+Input: s1 = "XYZW", s2 = "XYWZ"
+Output: 3
+Explanation: The longest common subsequences of "XYZW" and "XYWZ" are "XYZ" and "XYW", both of length 3.
+
+Constraints:
+1<= s1.size(), s2.size() <=103
+Both strings s1 and s2 contain only uppercase English letters.
+
+Expected Complexities
+Time Complexity: O(n * m)Auxiliary Space: O(n)
+
+Approach 1: Brute Force (Recursion):Time Complexity:O(2^ (n+m) ) (Exponential).Space Complexity: O(n+m) (Recursive stack space)
+Steps:
+Start from the last characters of both strings.
+If they match, include them in the LCS and recurse for the remaining part.
+If they don’t match, recursively compute LCS by either:
+Ignoring the last character of s1
+Ignoring the last character of s2
+Return the maximum of the two possibilities.
+
+static int lcs(String s1, String s2) {
+        // code here
+        // Brute Force Approach using Recursion
+        int n=s1.length();
+        int m=s2.length();
+        return helper(s1,s2,n-1,m-1);
+    }
+    
+    public static int helper(String s1,String s2,int i,int j){
+        // Base Case:If one string is empty
+        if(i<0 || j<0){
+            return 0;
+        }
+        
+        // If character match then check for the previous substring in both string
+        if(s1.charAt(i)==s2.charAt(j)){
+            return 1+helper(s1,s2,i-1,j-1);
+        }
+        
+         // If characters do not match, take the max of two possibilities
+         return 0+Math.max(helper(s1,s2,i-1,j),helper(s1,s2,i,j-1));
+    }
+
+Approach 2: Memoization (Top-Down DP):Time Complexity: O(n×m) .Space Complexity: O(n×m)+O(n+m) (DP table + Recursion stack)
+Steps:
+Create a dp table initialized to -1 of size n×m.
+Follow the recursive approach but store the results of subproblems in dp.
+If the result for dp[i][j] is already computed, return it directly.
+Use recursion to compute LCS while avoiding recomputation.
+
+static int lcs(String s1, String s2) {
+        // code here
+        // Top-Down DP (Memoization)
+        int n=s1.length();
+        int m=s2.length();
+        int [][] dp=new int[n][m];
+        for(int [] row:dp){
+            Arrays.fill(row,-1);
+        }
+        return helper(s1,s2,n-1,m-1,dp);
+    }
+    
+    public static int helper(String s1,String s2,int i,int j,int[][]dp){
+        // Base Case:If one string is empty
+        if(i<0 || j<0){
+            return 0;
+        }
+        
+        // If result is already stored
+        if(dp[i][j]!=-1) return dp[i][j];
+        
+        // If character match then check for the previous substring in both string
+        if(s1.charAt(i)==s2.charAt(j)){
+            dp[i][j]=1+helper(s1,s2,i-1,j-1,dp);
+        }
+        
+         // If characters do not match, take the max of two possibilities
+         else{ 
+             dp[i][j]=0+Math.max(helper(s1,s2,i-1,j,dp),helper(s1,s2,i,j-1,dp));
+         }
+         
+         return dp[i][j];
+    }
+
+Approach 3: Tabulation (Bottom-Up DP):Time Complexity: O(n×m).Space Complexity: O(n×m) (2D DP table)
+Steps:
+Create a 2D dp table of size (n+1)×(m+1), initialized to 0.
+Iterate through s1 and s2, filling dp[i][j]:
+If characters match, take 1 + dp[i-1][j-1].
+Otherwise, take max(dp[i-1][j], dp[i][j-1]).
+The final answer is stored in dp[n][m].
+
+static int lcs(String s1, String s2) {
+        // code here
+        int n=s1.length();
+        int m=s2.length();
+        int dp[][]=new int [n+1][m+1];
+        for(int i=1;i<=n;i++){
+            for(int j=1;j<=m;j++){
+                //When s1[i-1] == s2[j-1], this character is part of the LCS.
+                //The LCS up to this point can be extended by adding 1 to the
+                // LCS of the previous subproblem (dp[i-1][j-1]).
+                if(s1.charAt(i-1)==s2.charAt(j-1)){
+                    dp[i][j]=1+dp[i-1][j-1];
+                }
+                //Instead, we take the maximum LCS length found so far by either:
+                //Ignoring s1[i-1] → Take LCS from dp[i-1][j]
+                //Ignoring s2[j-1] → Take LCS from dp[i][j-1]
+                else{
+                    dp[i][j]=Math.max(dp[i-1][j],dp[i][j-1]);
+                }
+            }
+        }
+        
+        return dp[n][m];
+    }
+
+
+Approach 4: Space Optimized DP:Time Complexity: O(n×m).Space Complexity: O(m) (Only storing two 1D arrays)
+Steps:
+Instead of storing the entire dp table, keep only two rows (prev and curr).
+Fill curr based on prev and update prev after each iteration.
+At the end, return prev[m].
+
+static int lcs(String s1, String s2) {
+        // code here
+        // Space Optimization;
+        int n=s1.length();
+        int m=s2.length();
+        int [] prev=new int [m+1];
+        int [] curr=new int [m+1];
+        
+        for(int i=1;i<=n;i++){
+            for(int j=1;j<=m;j++){
+                if(s1.charAt(i-1)==s2.charAt(j-1)){
+                    curr[j]=1+prev[j-1]; // Diagonal move
+                }
+                else{
+                    curr[j]=0+Math.max(prev[j],curr[j-1]); // Top or Left
+                }
+            }
+             prev = curr.clone();  // Copy current row to previous row
+        }
+        
+        return prev[m];
+    }

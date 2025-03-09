@@ -1,0 +1,57 @@
+Palindrome SubStrings
+Difficulty: MediumAccuracy: 45.8%Submissions: 34K+Points: 4Average Time: 30Given a string s, count all palindromic sub-strings present in the string. The length of the palindromic sub-string must be greater than or equal to 2. 
+
+Examples
+Input: s = "abaab"
+Output: 3
+Explanation: All palindromic substrings are : "aba" , "aa" , "baab".
+
+Input: s = "aaa"
+Output: 3
+Explanation: All palindromic substrings are : "aa", "aa", "aaa".
+
+Input: s = "abbaeae"
+Output: 4
+Explanation: All palindromic substrings are : "bb" , "abba" , "aea", "eae".
+
+Constraints:
+2 ≤ s.size() ≤ 10^3
+string contains only lowercase english characters
+
+Expected Complexities
+Time Complexity: O(n^2)Auxiliary Space: O(n^2)
+
+Approach: Expand Around Center : 
+
+Time Complexity
+Each expansion takes O(n) in the worst case.Total iterations: O(n) * O(n) = O(n²).Space Complexity O(1) (Only integer variables are used).
+Loop through each character in the string.
+Expand outward from the center:
+Count only palindromes of length ≥ 2 (ignore single characters).
+Consider odd-length palindromes (single character center).
+Consider even-length palindromes (two character center).
+Update the count each time a valid palindrome is found.
+
+ public int countPS(String s) {
+        // code here
+        if(s==null || s.length()==0) return 0;
+        int count=0;
+        for(int i=0;i<s.length();i++){
+            // count all palindroms length >=2
+            count+=expandFromCenter(s,i,i);  // odd length middle is single character
+            count+=expandFromCenter(s,i,i+1); // even length middle is two character
+            
+        }
+        return count;
+    }
+    public static int expandFromCenter(String s,int left,int right){
+        int count=0;
+        while(left>=0 && right<s.length() && s.charAt(left)==s.charAt(right)){
+            if (right - left + 1 >= 2) { // Only count palindromes of length >= 2
+                count++;
+            }
+            left--;  // Expand left
+            right++; // Expand right
+        }
+        return count;
+    }

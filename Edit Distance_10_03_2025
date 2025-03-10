@@ -1,0 +1,233 @@
+Edit Distance
+Given two strings s1 and s2. Return the minimum number of operations required to convert s1 to s2.
+The possible operations are permitted:
+Insert a character at any position of the string.
+Remove any character from the string.
+Replace any character from the string with any other character.
+Examples:
+
+Input: s1 = "geek", s2 = "gesek"
+Output: 1
+Explanation: One operation is required, inserting 's' between two 'e' in s1.
+
+Input: s1 = "gfg", s2 = "gfg"
+Output: 0
+Explanation: Both strings are same.
+
+Input: s1 = "abcd", s2 = "bcfe"
+Output: 3
+Explanation: We can convert s1 into s2 by removing ‘a’, replacing ‘d’ with ‘f’ and inserting ‘e’ at the end. 
+
+Constraints:
+1 ≤ s1.length(), s2.length() ≤ 10^3
+Both the strings are in lowercase.
+
+Expected Complexities
+Time Complexity: O(n * m)Auxiliary Space: O(n * m)
+
+
+1. Brute Force (Recursive) Approach (Top-Down)
+Time Complexity: O(3^n) (Exponential, due to repeated calls).
+Space Complexity: O(n + m) (Recursive call stack).
+Steps:
+Base Cases:
+If s1 is empty (i < 0), return j + 1 (insert all characters of s2).
+If s2 is empty (j < 0), return i + 1 (remove all characters of s1).
+If last characters match, no operation is needed; move to (i-1, j-1).
+If last characters differ, consider all three operations:
+Insert: Recur for (i, j-1).
+Remove: Recur for (i-1, j).
+Replace: Recur for (i-1, j-1).
+Return the minimum of the three operations +1 (cost of the operation).
+
+ public int editDistance(String s1, String s2) {
+        // Code here
+        // Brute Force approach using Recusrion
+        
+        return mindistance(s1,s2,s1.length()-1,s2.length()-1);
+    }
+    
+    public int mindistance(String s1,String s2,int i,int j){
+        
+        // Base Case
+        if(i<0) return j+1;// If s1 is empty, insert all characters of s2
+        if(j<0) return i+1; // If s2 is empty, remove all characters of s1
+        
+          // If last characters are the same, then no operartion and check in shrinked string
+          if(s1.charAt(i)==s2.charAt(j)){
+              return 0+mindistance(s1,s2,i-1,j-1);
+          }
+          
+          
+           // If last characters are different, consider all three operations
+          else{
+              
+              int insert=mindistance(s1,s2,i,j-1); // Character Insert
+              int remove=mindistance(s1,s2,i-1,j); // Character Remove
+              int replace=mindistance(s1,s2,i-1,j-1); // Chracter Replace
+              
+              return 1+Math.min(insert,Math.min(remove,replace));
+              
+          }
+          
+    }
+
+2. Memoization (Top-Down DP)
+Time Complexity: O(n × m) (Each subproblem is solved once).
+Space Complexity: O(n × m) (DP table) + O(n + m) (Recursive stack).
+Steps:
+Use a 2D DP table (dp[i][j]) to store already computed results.
+Base Cases: Same as the brute force approach.
+Recursive calls: If dp[i][j] is already computed, return it.
+Memoize the result of the minimum operations.
+
+public int editDistance(String s1, String s2) {
+        // Code here
+        // Using Memoization
+        
+        int n=s1.length();
+        int m=s2.length();
+        int [][] dp=new int [n][m];
+        
+        for(int [] row:dp){
+            Arrays.fill(row,-1);
+        }
+        
+        return mindistance(s1,s2,s1.length()-1,s2.length()-1,dp);
+    }
+    
+    public int mindistance(String s1,String s2,int i,int j,int[][] dp){
+        
+        // Base Case
+        if(i<0) return j+1;// If s1 is empty, insert all characters of s2
+        if(j<0) return i+1; // If s2 is empty, remove all characters of s1
+        
+        if(dp[i][j]!=-1) return dp[i][j];
+        
+          // If last characters are the same, then no operartion and check in shrinked string
+          if(s1.charAt(i)==s2.charAt(j)){
+              dp[i][j]=0+mindistance(s1,s2,i-1,j-1,dp);
+          }
+          
+          
+           // If last characters are different, consider all three operations
+          else{
+              
+              int insert=mindistance(s1,s2,i,j-1,dp); // Character Insert
+              int remove=mindistance(s1,s2,i-1,j,dp); // Character Remove
+              int replace=mindistance(s1,s2,i-1,j-1,dp); // Chracter Replace
+              
+              dp[i][j]=1+Math.min(insert,Math.min(remove,replace));
+              
+          }
+          
+          
+          return dp[i][j];
+          
+    }
+
+
+3. Tabulation (Bottom-Up DP)
+Time Complexity: O(n × m) (Iterate over DP table).
+Space Complexity: O(n × m) (Full DP table).
+
+Steps:
+Create a 2D DP table dp[n+1][m+1] (where dp[i][j] stores the edit distance for s1[0..i] and s2[0..j]).
+Fill the base cases:
+dp[i][0] = i (deleting all characters in s1).
+dp[0][j] = j (inserting all characters in s2).
+Fill the table iteratively:
+If characters match → Copy dp[i-1][j-1].
+Otherwise, take 1 + min(insert, remove, replace).
+Return dp[n][m].
+
+public int editDistance(String s1, String s2) {
+        // Code here
+        int n=s1.length();
+        int m=s2.length();
+         // DP table of size (n+1) x (m+1)
+        int [][]dp=new int[n+1][m+1];
+        
+        // Fill the Base Cases
+        for(int i=0;i<=n;i++){
+            dp[i][0]=i;  // Deleting all characters from s1
+        }
+        
+        for(int j=0;j<=m;j++){
+            dp[0][j]=j; // Inserting all characters to s1
+        }
+        
+          // Fill the DP table using bottom-up approach
+          
+          for(int i=1;i<=n;i++){
+              for(int j=1;j<=m;j++){
+                  
+                  // If last characters are the same, then no operartion
+                  if(s1.charAt(i-1)==s2.charAt(j-1)){
+                      dp[i][j]=0+dp[i-1][j-1];
+                  }
+                  
+                  // If last characters are different, consider all three operations
+                  else{
+                      int insert=dp[i][j-1];  // Insert
+                      int remove = dp[i - 1][j];   // Remove operation
+                      int replace = dp[i - 1][j - 1]; // Replace operation
+                      dp[i][j]=1+Math.min(insert,Math.min(remove,replace));
+                  }
+              }
+          }
+          
+          return dp[n][m]; // The result is in the bottom-right cell
+        
+    }
+
+4. Space Optimized (Using Two 1D Arrays)
+Time Complexity: O(n × m)
+Space Complexity: O(m)
+Steps:
+Instead of a 2D DP table, use two 1D arrays (prev and curr).
+Base case: prev[j] = j (transforming empty s1 to s2).
+Compute row-by-row: Store only the previous and current row.
+Update prev to curr after processing each row.
+Return prev[m] as the final answer.
+
+public int editDistance(String s1, String s2) {
+        // Code here
+        int n=s1.length();
+        int m=s2.length();
+        int [] prev=new int [m+1];
+        int curr[]=new int [m+1];
+        
+         // Fill the base case for row 0 (transforming empty string to s2)
+        for (int j = 0; j <= m; j++) {
+            prev[j] = j;
+        }
+        
+        
+        // Compute row-wise DP
+          
+          for(int i=1;i<=n;i++){
+              curr[0]=i;
+              for(int j=1;j<=m;j++){
+                  
+                  // If last characters are the same, then no operartion
+                  if(s1.charAt(i-1)==s2.charAt(j-1)){
+                      curr[j]=prev[j-1];
+                  }
+                  
+                  // If last characters are different, consider all three operations
+                  else{
+                      int insert=curr[j-1];  // Insert
+                      int remove = prev[j];   // Remove operation
+                      int replace = prev[j - 1]; // Replace operation
+                      curr[j]=1+Math.min(insert,Math.min(remove,replace));
+                  }
+              }
+              
+              prev=curr.clone();
+          }
+          
+          return prev[m]; // The result is in the bottom-right cell
+        
+    }
+

@@ -1,0 +1,143 @@
+Ways to Reach the n'th Stair
+There are n stairs, a person standing at the bottom wants to reach the top. The person can climb either 1 stair or 2 stairs at a time. Your task is to count the number of ways, the person can reach the top (order does matter).
+
+Examples:
+Input: n = 1
+Output: 1
+Explanation: There is only one way to climb 1 stair. 
+
+Input: n = 2
+Output: 2
+Explanation: There are 2 ways to reach 2th stair: {1, 1} and {2}.  
+
+Input: n = 4
+Output: 5
+Explanation: There are five ways to reach 4th stair: {1, 1, 1, 1}, {1, 1, 2}, {2, 1, 1}, {1, 2, 1} and {2, 2}.
+
+Constraints:
+1 ≤ n ≤ 44
+
+Expected Complexities
+Time Complexity: O(n)Auxiliary Space: O(1)
+
+1️⃣ Brute Force (Recursive Approach)
+Time Complexity: O(2^n) (Exponential, since each call branches into two more calls)
+Space Complexity: O(n) (Depth of recursion tree)
+This approach follows the direct recursive formula:
+f(n)=f(n−1)+f(n−2)
+Steps:
+Base Case:
+If n == 0, return 1 (1 way: do nothing).
+If n < 0, return 0 (invalid case).
+Recursive Case:
+Compute ways(n) = ways(n-1) + ways(n-2).
+Recursively call the function until the base case is reached.
+
+int countWays(int n) {
+        // your code here
+        
+          if (n <= 1) return 1; // Covers both n == 0 and n == 1
+          
+          return countWays(n-1)+countWays(n-2);
+        
+    }
+
+2️⃣ Memoization (Top-down DP)
+Time Complexity: O(n) (Each subproblem is solved once)
+Space Complexity: O(n) (Memoization array + recursion stack)
+Memoization avoids redundant calculations by storing results in an array.
+Steps:
+Create a memoization array dp[] initialized with -1.
+Base Cases:
+If n == 0, return 1.
+If n < 0, return 0.
+Check the memoization table (dp[n]).
+If dp[n] is already computed, return it.
+Otherwise, compute recursively and store the result.
+Return dp[n].
+
+ int countWays(int n) {
+        // your code here
+        
+        int dp[]=new int [n+1];
+        
+        for(int i=0;i<=n;i++){
+            dp[i]=-1;
+        }
+        
+        return helper(n,dp);
+    }
+    
+    public int helper(int n,int[] dp){
+        
+        if(n<=1) return 1; // Covers both n == 0 and n == 1
+        
+        if(dp[n]!=-1) return dp[n];
+        
+        dp[n]=helper(n-1,dp)+helper(n-2,dp);
+        
+        return dp[n];
+         
+    }
+
+3️⃣ Tabulation (Bottom-up DP)
+Time Complexity: O(n) (Single loop from 2 to n)
+Space Complexity: O(n) (Array dp[] of size n+1)
+Tabulation builds the solution iteratively instead of using recursion.
+Steps:
+Create an array dp[] of size (n+1).
+Initialize base cases:
+dp[0] = 1
+dp[1] = 1
+Iterate from 2 to n:
+Compute dp[i] = dp[i-1] + dp[i-2]
+Return dp[n].
+
+int countWays(int n) {
+        // your code here
+        if(n<=1) return 1; // Covers both n == 0 and n == 1
+        
+        int dp[]=new int [n+1];
+        dp[0]=1;
+        dp[1]=1;
+        
+        for (int i = 2; i <= n; i++) {
+            dp[i] = dp[i - 1] + dp[i - 2]; // Transition relation
+        }
+        
+         return dp[n];
+
+    }
+
+4️⃣ Space Optimized DP
+Time Complexity: O(n) (Single loop from 2 to n)
+Space Complexity: O(1) (Only two variables used)
+
+We only need the last two values (dp[i-1] and dp[i-2]), so we can use two variables instead of an array.
+Steps:
+Initialize two variables:
+prev1 = 1 (ways to reach stair 1)
+prev2 = 1 (ways to reach stair 0)
+Loop from 2 to n:
+Compute curr = prev1 + prev2
+Update prev1 = prev2 and prev2 = curr
+Return curr.
+
+int countWays(int n) {
+        // your code here
+        if(n<=1) return 1; // Covers both n == 0 and n == 1
+        
+        int Prev1=1;
+        int Prev2=1;
+        
+        int curr=0;
+        
+        for (int i = 2; i <= n; i++) {
+            curr=Prev1+Prev2;
+            Prev1=Prev2;
+            Prev2=curr;
+        }
+        
+         return curr;
+
+    }

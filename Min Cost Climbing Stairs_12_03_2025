@@ -1,0 +1,153 @@
+Min Cost Climbing Stairs
+Given an array of integers cost[] where cost[i] is the cost of the ith step on a staircase. Once the cost is paid, you can either climb one or two steps. Return the minimum cost to reach the top of the floor.
+Assume 0-based Indexing. You can either start from the step with index 0, or the step with index 1.
+
+Examples:
+
+Input: cost[] = [10, 15, 20]
+Output: 15
+Explanation: Cheapest option is to start at cost[1], pay that cost, and go to the top.
+
+Input: cost[] = [1, 100, 1, 1, 1, 100, 1, 1, 100, 1]
+Output: 6
+Explanation: Cheapest option is to start on cost[0], and only step on 1s, skipping cost[3].
+
+
+Constraints:
+2 ≤ cost.size() ≤ 10^5
+0 ≤ cost[i] ≤ 999
+
+Expected Complexities
+Time Complexity: O(n)Auxiliary Space: O(1)
+
+1. Brute Force Recursive Solution (Exponential Time)
+Time Complexity: O(2ⁿ) (Exponential)
+Each call makes two recursive calls, leading to T(n) = 2T(n-1) → O(2ⁿ).
+Space Complexity: O(n) (Recursion Stack)
+
+This is the simplest but least efficient approach using recursion.
+Steps
+Define a recursive function helper(cost, i) where i is the current step.
+Base case: If i >= cost.length, return 0 (reached the top).
+Recursive relation:
+helper(i)=cost[i]+min(helper(i+1),helper(i+2))
+From step i, you can move one step (i+1) or two steps (i+2).
+Take the minimum cost of both choices.
+Start from either helper(0) or helper(1), whichever is smaller.
+
+ static int minCostClimbingStairs(int[] cost) {
+        // Write your code here
+        
+        return Math.min(helper(cost,0),helper(cost,1));
+    }
+    
+    public static int helper(int [] cost,int i){
+        // Base case if we reached the top
+        if(i>=cost.length) return 0;
+        
+        // Recursively compute the min cost from this step
+        int oneSteps=helper(cost,i+1);
+        int twoSteps=helper(cost,i+2);
+        
+        return cost[i]+Math.min(oneSteps,twoSteps);
+    }
+
+2. Recursion with Memoization (Top-Down DP)
+Time Complexity: O(n) (Each step is computed only once)
+Space Complexity: O(n) (Recursion Stack + Memoization Array)
+
+To optimize the brute force approach, we use memoization (caching previous results).
+Steps
+Create a memoization array memo[] initialized with -1 (uncomputed states).
+Modify helper() to store & reuse results:
+If memo[i] is already computed, return it.
+Otherwise, compute recursively and store the result.
+Start recursion from min(helper(0), helper(1)).
+
+static int minCostClimbingStairs(int[] cost) {
+        // Write your code here
+        
+        int n=cost.length;
+        int [] dp=new int [n];
+        Arrays.fill(dp,-1);
+        
+        return Math.min(helper(cost,0,dp),helper(cost,1,dp));
+    }
+    
+    public static int helper(int [] cost,int i,int [] dp){
+        // Base case if we reached the top
+        if(i>=cost.length) return 0;
+        
+        
+        // if result already stored
+        if(dp[i]!=-1) return dp[i];
+        // Recursively compute the min cost from this step
+        int oneSteps=helper(cost,i+1,dp);
+        int twoSteps=helper(cost,i+2,dp);
+        
+        dp[i]=cost[i]+Math.min(oneSteps,twoSteps);
+        
+        return dp[i];
+    }
+
+3. Bottom-Up DP (Tabulation)
+Time Complexity: O(n) (Iterates through cost[] once)
+Space Complexity: O(n) (dp[] array)
+
+Instead of recursion, we iterate from the bottom up, filling a dp[] array.
+Steps
+Define dp[i] as the minimum cost to reach step i.
+Base cases:
+dp[0] = 0
+dp[1] = 0
+Fill dp[i] using:
+dp[i]=min(dp[i−1]+cost[i−1],dp[i−2]+cost[i−2])
+dp[i-1] + cost[i-1] → One step
+dp[i-2] + cost[i-2] → Two steps
+Answer is stored in dp[n].
+
+static int minCostClimbingStairs(int[] cost) {
+        // Write your code here
+        
+        int n=cost.length;
+        int [] dp=new int [n+1];
+        dp[0]=0;// No cost before the first step
+        dp[1]=0;// No cost before the second step
+        
+        for(int i=2;i<=n;i++){
+            dp[i]=Math.min(dp[i-1]+cost[i-1],dp[i-2]+cost[i-2]);
+        }
+        
+        return dp[n];
+        
+    }
+
+4. Optimized Bottom-Up DP (O(1) Space)
+Time Complexity: O(n)
+Space Complexity: O(1) (No extra array)
+
+Instead of storing an entire dp[] array, we use two variables (prev1 and prev2).
+Steps
+Define two variables:
+prev2 = 0 (cost before last step)
+prev1 = 0 (cost before current step)
+Iteratively compute:
+curr = min(prev1 + cost[i-1], prev2 + cost[i-2])
+Update: prev2 = prev1, prev1 = curr
+Return prev1 (minimum cost to reach the top).
+
+static int minCostClimbingStairs(int[] cost) {
+        // Write your code here
+         int n = cost.length;
+        int prev2 = 0, prev1 = 0; // Equivalent to dp[0] and dp[1]
+
+        for (int i = 2; i <= n; i++) {
+            int curr = Math.min(prev1 + cost[i - 1], prev2 + cost[i - 2]);
+            prev2 = prev1;
+            prev1 = curr;
+        }
+
+        return prev1; // Final result
+        
+    }
+    

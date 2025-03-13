@@ -1,0 +1,272 @@
+0 - 1 Knapsack Problem
+Given n items, each with a specific weight and value, and a knapsack with a capacity of W, the task is to put the items in the knapsack such that the sum of weights of the items <= W and the sum of values associated with them is maximized. 
+
+Note: You can either place an item entirely in the bag or leave it out entirely. Also, each item is available in single quantity.
+
+Examples :
+Input: W = 4, val[] = [1, 2, 3], wt[] = [4, 5, 1] 
+Output: 3
+Explanation: Choose the last item, which weighs 1 unit and has a value of 3.
+
+Input: W = 3, val[] = [1, 2, 3], wt[] = [4, 5, 6] 
+Output: 0
+Explanation: Every item has a weight exceeding the knapsack's capacity (3).
+
+Input: W = 5, val[] = [10, 40, 30, 50], wt[] = [5, 4, 2, 3] 
+Output: 80
+Explanation: Choose the third item (value 30, weight 2) and the last item (value 50, weight 3) for a total value of 80.
+
+Constraints:
+2 ≤ val.size() = wt.size() ≤ 10^3
+1 ≤ W ≤ 10^3
+1 ≤ val[i] ≤ 10^3
+1 ≤ wt[i] ≤ 10^3
+
+Expected Complexities
+Time Complexity: O (n * W)Auxiliary Space: O (n * W)
+
+
+1st Approach: Recursion (Brute Force)
+Time Complexity: O(2^n ) (Exponential, due to repeated calls for overlapping subproblems).
+Space Complexity: O(n) (Recursion stack depth).
+
+Steps:
+Define a recursive function helper(ind, W, val, wt).
+Base Case: If ind == 0, return val[0] if wt[0] <= W, else return 0.
+Choice 1 (Not Take): Recursively call helper(ind-1, W, val, wt).
+Choice 2 (Take): If wt[ind] ≤ W, recursively call helper(ind-1, W - wt[ind], val, wt) + val[ind].
+Return max(take, notTake).
+
+ // Function to return max value that can be put in knapsack of capacity.
+    static int knapsack(int W, int val[], int wt[]) {
+        // code here
+        
+        return helper(val.length-1,W,val,wt);
+    }
+    
+    static int helper(int ind,int W,int [] val,int [] wt){
+        
+        // Base Case
+        if(ind==0){
+            if(wt[0]<=W){
+                return val[0];
+            }
+            else{
+                return 0;
+            }
+        }
+        
+        
+        int notTake=0+helper(ind-1,W,val,wt);
+        
+        int take=Integer.MIN_VALUE;
+        
+        if(wt[ind]<=W){
+            take=val[ind]+helper(ind-1,W-wt[ind],val,wt);
+        }
+        
+        
+        return Math.max(notTake,take);
+    }
+
+
+2nd Approach: Memoization (Top-Down DP)
+Time Complexity: O(n×W) (Each state is computed once).
+Space Complexity: O(n×W)+O(n) (DP table + recursion stack).
+Steps:
+Initialize a 2D DP array dp[n][W+1] filled with -1.
+Modify the recursive function to check if dp[ind][W] is already computed; if yes, return it.
+Compute notTake and take recursively as in the recursive approach.
+Store max(notTake, take) in dp[ind][W] before returning.
+
+// Function to return max value that can be put in knapsack of capacity.
+    static int knapsack(int W, int val[], int wt[]) {
+        // code here
+        
+        int n=val.length;
+        int[][] dp=new int [n][W+1];  // W+1 so that W can be Up to W as index starts from 0
+        for (int i = 0; i < dp.length; i++) {
+            for (int j = 0; j < dp[i].length; j++) {
+                dp[i][j] = -1;
+                
+            }
+}
+        return helper(val.length-1,W,val,wt,dp);
+    }
+    
+    static int helper(int ind,int W,int [] val,int [] wt,int [][] dp){
+        
+        // Base Case
+        if(ind==0){
+            if(wt[0]<=W){
+                return val[0];
+            }
+            else{
+                return 0;
+            }
+        }
+        
+        if(dp[ind][W]!=-1) return dp[ind][W];
+        
+        int notTake=0+helper(ind-1,W,val,wt,dp);
+        
+        int take=Integer.MIN_VALUE;
+        
+        if(wt[ind]<=W){
+            take=val[ind]+helper(ind-1,W-wt[ind],val,wt,dp);
+        }
+        
+        
+        dp[ind][W]=Math.max(notTake,take);
+        
+        return dp[ind][W];
+    }
+
+3rd Approach: Tabulation (Bottom-Up DP)
+Time Complexity: O(n×W).
+Space Complexity: O(n×W) (2D DP array).
+
+Steps:
+Create a DP table dp[n][W+1] initialized to 0.
+Fill the base case: If wt[0] ≤ W, set dp[0][w] = val[0].
+Iterate through i = 1 to n-1:
+Iterate through w = 0 to W:
+Compute notTake = dp[i-1][w].
+Compute take = val[i] + dp[i-1][w - wt[i]] (if valid).
+Store dp[i][w] = max(take, notTake).
+Return dp[n-1][W].
+
+// Function to return max value that can be put in knapsack of capacity.
+    static int knapsack(int W, int val[], int wt[]) {
+        // code here
+        int n=val.length;
+        int [][] dp=new int [n][W+1];
+        
+          // Base case: Fill first row (only one item available)
+        for(int w=0;w<=W;w++){
+            if(wt[0]<=w){
+                dp[0][w]=val[0];
+            }
+            else{
+                dp[0][w]=0;
+            }
+        }
+        
+        
+         // Fill the dp table iteratively
+         for(int i=1;i<n;i++){
+             
+             for(int w=0;w<=W;w++){
+                 int notTake = dp[i - 1][w]; // Not taking the current item
+                 int take = 0;
+                 if (wt[i] <= w) // Taking the current item if weight allows
+                 take = val[i] + dp[i - 1][w - wt[i]];
+                 dp[i][w] = Math.max(notTake, take); // Store the maximum value
+             }
+         }
+         
+         
+         return dp[n-1][W];
+        
+    }
+
+4th Approach: Space Optimized DP (Using Two Arrays)
+Time Complexity: O(n×W).
+Space Complexity: O(W) (Only two 1D arrays).
+
+Steps:
+Use two 1D arrays prev[W+1] and curr[W+1].
+Fill the base case: If wt[0] ≤ W, set prev[w] = val[0].
+Iterate i = 1 to n-1:
+Iterate w = 0 to W:
+Compute notTake = prev[w].
+Compute take = val[i] + prev[w - wt[i]] (if valid).
+Store curr[w] = max(take, notTake).
+Copy curr to prev after each iteration.
+Return prev[W].
+
+// Function to return max value that can be put in knapsack of capacity.
+    static int knapsack(int W, int val[], int wt[]) {
+        // code here
+        int n=val.length;
+        int [] prev=new int [W+1];
+        int [] curr=new int [W+1];
+        
+          // Base case: Fill first row (only one item available)
+        for(int w=0;w<=W;w++){
+            if(wt[0]<=w){
+                prev[w]=val[0];
+            }
+            else{
+                prev[w]=0;
+            }
+        }
+        
+        
+         // Fill the dp table iteratively
+         for(int i=1;i<n;i++){
+             
+             for(int w=0;w<=W;w++){
+                 int notTake = prev[w]; // Not taking the current item
+                 int take = 0;
+                 if (wt[i] <= w) // Taking the current item if weight allows
+                 take = val[i] + prev[w - wt[i]];
+                 curr[w] = Math.max(notTake, take); // Store the maximum value
+             }
+             
+             prev=curr.clone();
+         }
+         
+         
+         return prev[W];
+        
+    }
+
+5th Approach: Space Optimized DP (Using One Array)
+
+Time Complexity: O(n×W).
+Space Complexity: O(W) (Only one 1D array).
+Steps:
+Use a single 1D array prev[W+1].
+Fill the base case: If wt[0] ≤ W, set prev[w] = val[0].
+Iterate i = 1 to n-1:
+Iterate w = W to 0 (in reverse to avoid overwriting).
+Compute notTake = prev[w].
+Compute take = val[i] + prev[w - wt[i]] (if valid).
+Store prev[w] = max(take, notTake).
+Return prev[W].
+
+ // Function to return max value that can be put in knapsack of capacity.
+    static int knapsack(int W, int val[], int wt[]) {
+        // code here
+        int n=val.length;
+        int [] prev=new int [W+1];
+        
+          // Base case: Fill first row (only one item available)
+        for(int w=0;w<=W;w++){
+            if(wt[0]<=w){
+                prev[w]=val[0];
+            }
+            else{
+                prev[w]=0;
+            }
+        }
+        
+        
+         // Fill the dp table iteratively
+         for(int i=1;i<n;i++){
+             
+             for(int w=W;w>=0;w--){
+                 int notTake = prev[w]; // Not taking the current item
+                 int take = 0;
+                 if (wt[i] <= w) // Taking the current item if weight allows
+                 take = val[i] + prev[w - wt[i]];
+                 prev[w] = Math.max(notTake, take); // Store the maximum value
+             }
+             
+         }
+         
+         
+         return prev[W];
+        
+    }

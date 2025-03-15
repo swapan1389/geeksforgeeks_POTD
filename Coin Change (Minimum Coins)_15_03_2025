@@ -1,0 +1,237 @@
+Coin Change (Minimum Coins)
+You are given an array coins[], where each element represents a coin of a different denomination, and a target value sum. You have an unlimited supply of each coin type {coins1, coins2, ..., coinsm}.
+Your task is to determine the minimum number of coins needed to obtain the target sum. If it is not possible to form the sum using the given coins, return -1.
+
+Examples:
+Input: coins[] = [25, 10, 5], sum = 30
+Output: 2
+Explanation: Minimum 2 coins needed, 25 and 5  
+
+Input: coins[] = [9, 6, 5, 1], sum = 19
+Output: 3
+Explanation: 19 = 9 + 9 + 1
+
+Input: coins[] = [5, 1], sum = 0
+Output: 0
+Explanation: For 0 sum, we do not need a coin
+
+Input: coins[] = [4, 6, 2], sum = 5
+Output: -1
+Explanation: Not possible to make the given sum.
+ 
+Constraints:
+1 ≤ sum * coins.size() ≤ 1066
+0 <= sum <= 10^4
+1 <= coins[i] <= 10^4
+1 <= coins.size() <= 10^3
+
+Expected Complexities
+Time Complexity: O(coins.size * sum)Auxiliary Space: O(sum)
+
+
+1. Recursive Approach (Without Memoization)
+Time Complexity: O(2^n) (Exponential, due to overlapping subproblems).
+Space Complexity: O(sum) (Recursive stack space).
+
+Steps:
+Base Case:
+If idx == 0 (only one type of coin left), check if sum is a multiple of coins[0].
+If yes, return sum / coins[0]; otherwise, return a large number (1e9) to indicate impossibility.
+Recursive Calls:
+Not Take: Skip the current coin and call helper(coins, idx - 1, sum).
+Take: If coins[idx] <= sum, include it and call helper(coins, idx, sum - coins[idx]), adding 1 to the count.
+Return:
+Minimum of take and notTake.
+
+public int minCoins(int coins[], int sum) {
+        // code here
+        
+        int n=coins.length;
+        int result = helper(coins, n - 1, sum);
+        return (result >= 1e9) ? -1 : result; // If impossible, return -1
+    }
+    
+    public int helper(int [] coins,int idx,int sum){
+        // Base case
+        
+        // If there is only one element left
+        if(idx==0){
+            if(sum%coins[0]==0) // if it feasible
+            {
+                return sum/coins[0]; // number of coins[0];
+            }
+            else{
+                return (int) 1e9; // Large number to indicate impossibility
+            }
+        }
+        
+        
+        
+        int notTake=helper(coins,idx-1,sum);
+        
+        int take=(int) 1e9;
+        if(coins[idx]<=sum){
+            take=1+helper(coins,idx,sum-coins[idx]);
+        }
+        
+        return Math.min(notTake,take);
+    }
+
+2. Recursive Approach with Memoization (Top-Down DP)
+
+Time Complexity: O(n×sum) (Each state (idx, sum) is computed once).
+Space Complexity: O(n×sum) (Memoization table + recursive stack).
+Steps:
+Create a Memoization Table dp[n][sum+1], initialized to -1.
+Modify the Recursive Function (helper) to use Memoization:
+
+Base Case: Same as before.
+Check Memoization Table: If dp[idx][sum] != -1, return the stored value.
+Compute notTake and take recursively.
+Store and return the minimum of notTake and take.
+
+public int minCoins(int coins[], int sum) {
+        // code here
+        
+        int n=coins.length;
+        int [][]dp=new int [n][sum+1];
+        for(int [] row:dp){
+            Arrays.fill(row,-1);
+        }
+        int result = helper(coins, n - 1, sum,dp);
+        return (result >= 1e9) ? -1 : result; // If impossible, return -1
+    }
+    
+    public int helper(int [] coins,int idx,int sum,int[][]dp){
+        // Base case
+        
+        // If there is only one element left
+        if(idx==0){
+            if(sum%coins[0]==0) // if it feasible
+            {
+                return sum/coins[0]; // number of coins[0];
+            }
+            else{
+                return (int) 1e9; // Large number to indicate impossibility
+            }
+        }
+        
+        // if result already stored
+        if(dp[idx][sum]!=-1) return dp[idx][sum];
+        
+        
+        
+        int notTake=helper(coins,idx-1,sum,dp);
+        
+        int take=(int) 1e9;
+        if(coins[idx]<=sum){
+            take=1+helper(coins,idx,sum-coins[idx],dp);
+        }
+        
+        dp[idx][sum]=Math.min(notTake,take);
+        
+        return dp[idx][sum];
+    }
+
+
+3. Tabulation Approach (Bottom-Up DP)
+
+
+Time Complexity: O(n×sum) (Nested loops iterate over all states).
+Space Complexity: O(n×sum) (DP table).
+Steps:
+Create a DP Table dp[n][sum+1].
+Initialize dp[0][s] = s / coins[0] if s % coins[0] == 0, else set to 1e9.
+Iterate through i from 1 to n-1 and s from 0 to sum:
+
+notTake = dp[i-1][s] (skip current coin).
+take = 1 + dp[i][s - coins[i]] if coins[i] <= s (include current coin).
+Store the minimum of notTake and take in dp[i][s].
+Return dp[n-1][sum] (or -1 if no solution exists).
+
+public int minCoins(int coins[], int sum) {
+        // code here
+        int n=coins.length;
+        int dp[][]=new int [n][sum+1];
+        
+        for(int s=0;s<=sum;s++){
+            // Base Case: When using only the first coin type
+            if(s%coins[0]==0){
+                dp[0][s]=s/coins[0];
+            }
+            else{
+                dp[0][s]=(int)1e9;
+            }
+        }
+        
+        
+        // Fill the dp table
+        
+        for(int i=1;i<n;i++){
+            for(int s=0;s<=sum;s++){
+                int notTake=dp[i-1][s];
+                int take=(int) 1e9;
+                if(coins[i]<=s){
+                    take=1+dp[i][s-coins[i]];
+                    
+                }
+                dp[i][s]=Math.min(notTake,take);
+            }
+        }
+        
+        return (dp[n-1][sum]>=(int)1e9)?-1:dp[n-1][sum];
+    }
+
+4. Space-Optimized DP (1D Array)
+Time Complexity: O(n×sum) (Same as tabulation).
+Space Complexity: O(sum) (Only two 1D arrays instead of full DP table).
+
+Steps:
+Use two 1D arrays: prev[] (previous row) and curr[] (current row).
+
+Initialize prev[s] = s / coins[0] if s % coins[0] == 0, else set to 1e9.
+Iterate through i = 1 to n-1 and s = 0 to sum:
+
+Compute notTake from prev[s].
+Compute take from curr[s - coins[i]] if coins[i] <= s.
+Store curr[s] = min(notTake, take).
+Update prev = curr.clone() after each iteration.
+
+Return prev[sum].
+
+
+public int minCoins(int coins[], int sum) {
+        // code here
+        int n=coins.length;
+        int prev[]=new int [sum+1];
+        int curr[]=new int [sum+1];
+        
+        for(int s=0;s<=sum;s++){
+            // Base Case: When using only the first coin type
+            if(s%coins[0]==0){
+                prev[s]=s/coins[0];
+            }
+            else{
+                prev[s]=(int)1e9;
+            }
+        }
+        
+        
+        // Fill the dp table
+        
+        for(int i=1;i<n;i++){
+            for(int s=0;s<=sum;s++){
+                int notTake=prev[s];
+                int take=(int) 1e9;
+                if(coins[i]<=s){
+                    take=1+curr[s-coins[i]];
+                    
+                }
+                curr[s]=Math.min(notTake,take);
+            }
+            
+            prev=curr.clone();
+        }
+        
+        return (prev[sum]>=(int)1e9)?-1:prev[sum];
+    }

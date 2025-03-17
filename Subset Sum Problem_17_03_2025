@@ -1,0 +1,279 @@
+Subset Sum Problem
+Given an array of positive integers arr[] and a value sum, determine if there is a subset of arr[] with sum equal to given sum. 
+
+Examples:
+Input: arr[] = [3, 34, 4, 12, 5, 2], sum = 9
+Output: true 
+Explanation: Here there exists a subset with target sum = 9, 4+3+2 = 9.
+
+Input: arr[] = [3, 34, 4, 12, 5, 2], sum = 30
+Output: false
+Explanation: There is no subset with target sum 30.
+
+Input: arr[] = [1, 2, 3], sum = 6
+Output: true
+Explanation: The entire array can be taken as a subset, giving 1 + 2 + 3 = 6.
+
+Constraints:
+1 <= arr.size() <= 200
+1<= arr[i] <= 200
+1<= sum <= 10^4
+
+Expected Complexities
+Time Complexity: O(sum*n)Auxiliary Space: O(sum)
+
+1st Solution (Generating all Subsequences - Backtracking)
+Time Complexity:O(2^n) (Exponential) because each element has two choices: include or exclude.
+Space Complexity:O(n) (Recursive stack space) for storing the current subset.
+
+Steps:
+Use a helper function to generate all possible subsets.
+Recursively include or exclude each element while keeping track of the current sum.
+If at any point, the sum equals the target, return true.
+If the end of the array is reached without finding a valid subset, return false.
+
+static Boolean isSubsetSum(int arr[], int sum) {
+        // code here
+        
+        // Genearete all subsequences 
+        
+        return helper(arr,0,new ArrayList<>(),0,sum);
+    }
+    
+     public static boolean helper(int[] arr, int index, ArrayList<Integer> current, int currentSum, int target) {
+        if (currentSum == target) {
+            return true; // Found a valid subsequence
+        }
+        if (index == arr.length) {
+            return false; // Reached the end without finding a valid subsequence
+        }
+
+        // Include the current element
+        current.add(arr[index]);
+        if (helper(arr, index + 1, current, currentSum + arr[index], target)) {
+            return true;
+        }
+
+        // Exclude the current element (backtrack)
+        current.remove(current.size() - 1);
+        if (helper(arr, index + 1, current, currentSum, target)) {
+            return true;
+        }
+
+        return false;
+
+
+2nd Solution (Recursive Approach without Memoization)
+Time Complexity:O(2^n) (Exponential) due to recursive branching.
+Space Complexity:O(n) (Recursive stack space).
+
+Steps:
+Start from the last index and try to include or exclude elements recursively.
+If the sum becomes 0, return true.
+If the index reaches 0, check if arr[0] equals the target sum.
+Return true if either including or excluding an element results in the required sum.
+
+static Boolean isSubsetSum(int arr[], int sum) {
+        // code here
+        
+        // Recursive approach
+        
+        return helper(arr.length-1,sum,arr);
+    }
+    
+    public static boolean helper(int ind,int sum,int[] arr){
+        
+        // Base Cases
+        if(sum==0) return true;
+        
+        if(ind==0){
+            if(arr[0]==sum) return true;
+            else return false;
+        }
+        
+        boolean notTake=helper(ind-1,sum,arr);
+        
+        boolean take=false;
+        
+        if(arr[ind]<=sum){
+            take=helper(ind-1,sum-arr[ind],arr);
+        }
+        
+        return notTake || take;
+    }
+
+3rd Solution (Recursive + Memoization)
+
+ime Complexity:O(n×sum) (Polynomial) since each subproblem is solved once.
+Space Complexity:O(n×sum) (For dp table) + O(n) (Recursive stack) → Overall: O(n×sum).
+
+Steps:
+Use recursion like the previous approach but store computed results in a dp table.
+If the state dp[ind][sum] is already computed, return it.
+Otherwise, compute it using inclusion and exclusion cases and store the result.
+Return the final result from dp[n-1][sum].
+
+static Boolean isSubsetSum(int arr[], int sum) {
+        int n = arr.length;
+        Boolean[][] dp = new Boolean[n][sum + 1]; // Use Boolean[][] to allow null values
+
+        return helper(n - 1, sum, arr, dp);
+    }
+
+    public static boolean helper(int ind, int sum, int[] arr, Boolean[][] dp) {
+        // Base Cases
+        if (sum == 0) return true;
+        if (ind == 0) return arr[0] == sum;
+
+        // Check if the state is already computed
+        if (dp[ind][sum] != null) return dp[ind][sum];
+
+        boolean notTake = helper(ind - 1, sum, arr, dp);
+        boolean take = false;
+
+        if (arr[ind] <= sum) {
+            take = helper(ind - 1, sum - arr[ind], arr, dp);
+        }
+
+        dp[ind][sum] = notTake || take;
+        return dp[ind][sum];
+    }
+
+4th Solution (Tabulation - 2D DP)
+Time Complexity:O(n×sum) (Nested loops).
+Space Complexity:O(n×sum) (For the dp table).
+
+Steps:
+Create a dp[n][sum+1] table.
+Initialize dp[i][0] = true (sum of 0 is always possible).
+If arr[0] is within range, set dp[0][arr[0]] = true.
+Fill the table using the transition formula:
+dp[i][s] = dp[i-1][s] (Not take the current element).
+dp[i][s] = dp[i-1][s-arr[i]] (Take the current element if possible).
+Return dp[n-1][sum].
+
+static Boolean isSubsetSum(int arr[], int sum) {
+        // code here
+        
+        int n=arr.length;
+        boolean [][] dp=new boolean[n][sum+1];
+        
+        // Base case: If sum is 0, we can always achieve it with an empty subset
+        for (int i = 0; i < n; i++) {
+            dp[i][0] = true;
+            
+        }
+        
+        for(int s=0;s<=sum;s++){
+            
+            if(arr[0]==s){
+                dp[0][s]=true;
+            }
+        }
+        
+        
+        // fill the dp table
+        
+        for(int i=1;i<n;i++){
+            for(int s=0;s<=sum;s++){
+                
+                boolean notTake=dp[i-1][s];
+                boolean take=false;
+                if(arr[i]<=s){
+                    take=dp[i-1][s-arr[i]];
+                }
+                
+                dp[i][s]=notTake|| take;
+            }
+        }
+        
+        
+        return dp[n-1][sum];
+    }
+
+5th Solution (Space Optimized - 1D DP with Two Arrays)
+Time Complexity:O(n×sum) (Nested loops).
+Space Complexity:O(sum) (Using only two 1D arrays).
+
+
+Steps:
+Use two boolean arrays prev and curr instead of a 2D table.
+Initialize prev[0] = true, and if arr[0] <= sum, set prev[arr[0]] = true.
+Iterate over the elements and update curr based on the previous row.
+Copy curr to prev after processing each element.
+Return prev[sum].
+
+static Boolean isSubsetSum(int arr[], int sum) {
+        int n = arr.length;
+        boolean[] prev = new boolean[sum + 1];
+        prev[0] = true;
+
+        for(int s=1;s<=sum;s++){
+            if(arr[0]==s){
+                prev[s]=true;
+            }
+        }
+        // Fill DP table
+        for (int i = 1; i < n; i++) {
+            boolean[] curr = new boolean[sum + 1];
+            curr[0] = true; // A sum of 0 is always possible
+
+            for (int s = 0; s <= sum; s++) {
+                boolean notTake = prev[s];
+                boolean take = false;
+                if (arr[i] <= s) {
+                    take = prev[s - arr[i]];
+                }
+                curr[s] = notTake || take;
+            }
+
+            prev = curr; // Update previous row
+        }
+
+        return prev[sum];
+    }
+
+6th Solution (Space Optimized - 1D DP with One Array)
+Time Complexity:O(n×sum) (Nested loops).
+Space Complexity:O(sum) (Using only one 1D array).
+
+Steps:
+Use a single dp[sum+1] array initialized to false.
+Initialize dp[0] = true, and set dp[arr[0]] = true if it is within range.
+Iterate over elements, updating dp from right to left.
+Return dp[sum].
+
+ static Boolean isSubsetSum(int arr[], int sum) {
+        // code here
+        
+        int n=arr.length;
+        boolean [] dp=new boolean [sum+1];
+        
+        
+        for(int s=0;s<=sum;s++){
+            
+            if(arr[0]==s){
+                dp[s]=true;
+            }
+        }
+        
+        
+        // fill the dp table
+        
+        for(int i=1;i<n;i++){
+            dp[0]=true;
+            for(int s=sum;s>=1;s--){ // for sum 0 already stored
+                
+                boolean notTake=dp[s];
+                boolean take=false;
+                if(arr[i]<=s){
+                    take=dp[s-arr[i]];
+                }
+                
+                dp[s]=notTake|| take;
+            }
+        }
+        
+        
+        return dp[sum];
+    }

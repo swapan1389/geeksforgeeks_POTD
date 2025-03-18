@@ -1,0 +1,332 @@
+Partition Equal Subset Sum
+Given an array arr[], determine if it can be partitioned into two subsets such that the sum of elements in both parts is the same.
+
+Note: Each element must be in exactly one subset.
+Examples:
+Input: arr = [1, 5, 11, 5]
+Output: true
+Explanation: The two parts are [1, 5, 5] and [11].
+
+Input: arr = [1, 3, 5]
+Output: false
+Explanation: This array can never be partitioned into two such parts.
+
+Constraints:
+1 ≤ arr.size ≤ 100
+1 ≤ arr[i] ≤ 200
+
+Expected Complexities
+Time Complexity: O(sum(arr) * n)Auxiliary Space: O(sum(arr))
+
+1. Recursive Approach (Without Memoization)
+Time Complexity:
+O(2^N) (Exponential) - Every element can be either taken or not taken, leading to 2^N recursive calls.
+Space Complexity:
+O(N) (Recursive Stack) - The depth of recursion is at most N.
+
+Steps:
+Compute the total sum of the array.
+If the sum is odd, return false (as it cannot be divided equally).
+Call the recursive function isSubsetSum(n-1, target, arr) to check if a subset with sum target = totalSum/2 exists.
+The recursive function:
+If target == 0, return true.
+If ind == 0, check if arr[0] == target.
+Recursively check:
+notTake: If we exclude the current element.
+take: If we include it (only if arr[ind] ≤ target).
+Return notTake || take.
+
+ static boolean equalPartition(int arr[]) {
+        // code here
+        
+        int totalsum=0;
+        for(int num:arr){
+            totalsum+=num;
+        }
+        
+        // If the total sum is odd, it's impossible to split it into two equal subsets
+        if (totalsum % 2 != 0) return false;
+        
+         return isSubsetSum(arr.length-1, totalsum / 2,arr);
+    }
+    
+    public static boolean isSubsetSum(int ind,int target,int[]arr){
+        
+        if(target==0) return false;
+        
+        if(ind==0){
+            if(arr[0]==target){
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+        
+        boolean notTake=isSubsetSum(ind-1,target,arr);
+        boolean take=false;
+        
+        if(arr[ind]<=target){
+            take=isSubsetSum(ind-1,target-arr[ind],arr);
+        }
+        
+        return notTake || take;
+    }
+
+
+
+
+2. Recursive Approach with Memoization
+Time Complexity:
+O(N * target) - We memoize each subproblem, reducing redundant calls.
+Space Complexity:
+O(N * target) (Memoization table) + O(N) (Recursion stack).
+
+Steps:
+Compute the total sum and check if it's odd.
+Initialize a memoization table dp[n][target+1].
+Call the recursive function isSubsetSum(n-1, target, arr, dp).
+The recursive function:
+If target == 0, return true.
+If ind == 0, return arr[0] == target.
+If dp[ind][target] is not null, return stored value.
+Compute notTake and take, store the result in dp[ind][target].
+
+static boolean equalPartition(int arr[]) {
+        // code here
+        
+        int n=arr.length;
+        int totalsum=0;
+        for(int num:arr){
+            totalsum+=num;
+        }
+        
+        // If the total sum is odd, it's impossible to split it into two equal subsets
+        if (totalsum % 2 != 0) return false;
+        
+        int target=totalsum/2;
+        Boolean[][] dp=new Boolean[n][target+1];  // Use Boolean[][] to allow null values
+        
+         return isSubsetSum(arr.length-1, target,arr,dp);
+    }
+    
+    public static boolean isSubsetSum(int ind,int target,int[]arr,Boolean[][] dp){
+        
+        if(target==0) return false;
+        
+        if(ind==0){
+            if(arr[0]==target){
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+        
+        if(dp[ind][target]!=null) return dp[ind][target];
+        
+        
+        boolean notTake=isSubsetSum(ind-1,target,arr,dp);
+        boolean take=false;
+        
+        if(arr[ind]<=target){
+            take=isSubsetSum(ind-1,target-arr[ind],arr,dp);
+        }
+        
+        dp[ind][target]=notTake || take;
+        
+        return dp[ind][target];
+    }
+
+3. Bottom-Up Dynamic Programming (Tabulation)
+
+Time Complexity:
+O(N * target) - We fill N * target entries in the table.
+Space Complexity:
+O(N * target) - Storing the entire DP table.
+
+Steps:
+Compute the total sum and check if it's odd.
+Initialize dp[n][target+1] where dp[i][s] stores if sum s is possible using the first i elements.
+Base case: dp[i][0] = true (sum 0 is always possible).
+Fill the DP table using:
+notTake = dp[i-1][s]
+take = dp[i-1][s - arr[i]] (if arr[i] ≤ s)
+dp[i][s] = notTake || take
+Return dp[n-1][target].
+
+static boolean equalPartition(int arr[]) {
+        // code here
+        
+        int n=arr.length;
+        int totalsum=0;
+        for(int num:arr){
+            totalsum+=num;
+        }
+        
+        // If the total sum is odd, it's impossible to split it into two equal subsets
+        if (totalsum % 2 != 0) return false;
+        
+        int target=totalsum/2;
+        boolean [][] dp=new boolean[n][target+1];  // Use Boolean[][] to allow null values
+        
+         
+        // Base case: If sum is 0, we can always achieve it with an empty subset
+        for (int i = 0; i < n; i++) {
+            dp[i][0] = true;
+            
+        }
+        
+         for(int s=0;s<=target;s++){
+            
+            if(arr[0]==s){
+                dp[0][s]=true;
+            }
+        }
+        
+         // fill the dp table
+         
+         for(int i=1;i<n;i++){
+             for(int s=1;s<=target;s++){
+                 boolean notTake=dp[i-1][s];
+                 
+                 boolean take=false;
+                 if(arr[i]<=s){
+                     take=dp[i-1][s-arr[i]];
+                 }
+                 
+                 dp[i][s]=notTake ||  take;
+             }
+         }
+         
+         return dp[n-1][target];
+        
+        
+    }
+
+
+4. Space-Optimized Dynamic Programming (2 Arrays)
+Time Complexity:
+O(N * target) - Still iterating over N * target values.
+Space Complexity:
+O(target) - Only storing prev[] and curr[] instead of O(N * target).
+
+
+Steps:
+Compute the total sum and check if it's odd.
+Use two 1D arrays: prev[] and curr[] of size target+1 instead of a 2D table.
+Base case: prev[0] = true.
+Iterate over elements and update curr[] using:
+notTake = prev[s]
+take = prev[s - arr[i]] (if arr[i] ≤ s)
+curr[s] = notTake || take
+Copy curr into prev after each iteration.
+Return prev[target].
+
+static boolean equalPartition(int arr[]) {
+        // code here
+        
+        int n=arr.length;
+        int totalsum=0;
+        for(int num:arr){
+            totalsum+=num;
+        }
+        
+        // If the total sum is odd, it's impossible to split it into two equal subsets
+        if (totalsum % 2 != 0) return false;
+        
+        int target=totalsum/2;
+        
+        boolean [] prev=new boolean [target+1]; 
+        prev[0]=true;
+     
+         for(int s=0;s<=target;s++){
+            
+            if(arr[0]==s){
+                prev[s]=true;
+            }
+        }
+        
+         // fill the dp table
+         
+         for(int i=1;i<n;i++){
+             boolean [] curr=new boolean [target+1];
+             curr[0]=true;
+             for(int s=target;s>=1;s--){
+                 boolean notTake=prev[s];
+                 
+                 boolean take=false;
+                 if(arr[i]<=s){
+                     take=prev[s-arr[i]];
+                 }
+                 
+                 curr[s]=notTake ||  take;
+             }
+             
+             prev=curr;
+         }
+         
+         return prev[target];
+        
+        
+    }
+
+5. Most Optimized DP (1 Array)
+Time Complexity:
+O(N * target) - Iterating over N * target.
+Space Complexity:
+O(target) - Using only a single 1D array.
+
+Steps:
+Compute the total sum and check if it's odd.
+Use a single 1D array dp[target+1].
+Initialize dp[0] = true (sum 0 is always possible).
+Iterate over elements and update dp[s] from right to left:
+dp[s] = dp[s] || dp[s - arr[i]]
+Return dp[target].
+
+
+ static boolean equalPartition(int arr[]) {
+        // code here
+        
+        int n=arr.length;
+        int totalsum=0;
+        for(int num:arr){
+            totalsum+=num;
+        }
+        
+        // If the total sum is odd, it's impossible to split it into two equal subsets
+        if (totalsum % 2 != 0) return false;
+        
+        int target=totalsum/2;
+        
+        boolean [] dp=new boolean [target+1]; 
+        dp[0]=true;
+     
+         for(int s=0;s<=target;s++){
+            
+            if(arr[0]==s){
+                dp[s]=true;
+            }
+        }
+        
+         // fill the dp table
+         
+         for(int i=1;i<n;i++){
+             for(int s=target;s>=1;s--){
+                 boolean notTake=dp[s];
+                 
+                 boolean take=false;
+                 if(arr[i]<=s){
+                     take=dp[s-arr[i]];
+                 }
+                 
+                 dp[s]=notTake ||  take;
+             }
+             
+         }
+         
+         return dp[target];
+        
+        
+    }

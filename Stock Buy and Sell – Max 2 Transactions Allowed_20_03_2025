@@ -1,0 +1,242 @@
+Stock Buy and Sell – Max 2 Transactions Allowed
+In daily share trading, a trader buys shares and sells them on the same day. If the trader is allowed to make at most 2 transactions in a day, find out the maximum profit that a share trader could have made.
+You are given an array prices[] representing stock prices throughout the day. Note that the second transaction can only start after the first one is complete (buy->sell->buy->sell).
+Examples:
+Input: prices[] = [10, 22, 5, 75, 65, 80]
+Output: 87
+Explanation: 
+Trader will buy at 10 and sells at 22. 
+Profit earned in 1st transaction = 22 - 10 = 12. 
+Then he buys at 5 and sell at 80. 
+Profit earned in 2nd transaction = 80 - 5 = 75. 
+Total profit earned = 12 + 75 = 87. 
+
+Input: prices[] = [2, 30, 15, 10, 8, 25, 80]
+Output: 100
+Explanation: 
+Trader will buy at 2 and sells at 30. 
+Profit earned in 1st transaction = 30 - 2 = 28. 
+Then he buys at 8 and sell at 80. 
+Profit earned in 2nd transaction = 80 - 8 = 72. 
+Total profit earned = 28 + 72 = 100.
+
+Constraints:
+1 <= prices.size() <= 10^5
+1 <= prices[i] <= 10^5
+
+
+Expected Complexities
+Time Complexity: O(n)Auxiliary Space: O(n)
+
+Solution 1: Recursion (Without Memoization)
+
+Time Complexity: O(2^N) (Exponential) - Each state leads to two recursive calls.
+Space Complexity: O(N) (Recursive stack depth in the worst case).
+
+Steps:
+Define a recursive helper function helper(ind, Tcount, prices, k).
+Base case: If ind == prices.length or Tcount == 2*k (maximum transactions reached), return 0.
+If Tcount % 2 == 0, it's a buying step:
+Either buy at prices[ind] and proceed to the next index with Tcount+1
+Or skip the transaction and move to the next index.
+Take the maximum of these choices.
+If Tcount % 2 == 1, it's a selling step:
+Either sell at prices[ind] and proceed to the next index with Tcount+1
+Or skip the transaction and move to the next index.
+Take the maximum of these choices.
+Return the maximum profit obtained.
+
+ public static int maxProfit(int[] prices) {
+        // code here
+        
+        return helper(0,0,prices,2);  // Maximum 2 transations
+    }
+    
+    public static int helper(int ind,int Tcount,int[] prices,int k){
+        // Base Case
+        if(ind==prices.length || Tcount==2*k){
+            return 0;
+        }
+        
+        int profit=0;
+        if(Tcount%2==0){ // Buy
+        
+        int buy=-prices[ind]+helper(ind+1,Tcount+1,prices,k);
+        int skip=0+helper(ind+1,Tcount,prices,k);
+        profit=Math.max(buy,skip);
+        
+        }
+        
+        else{// sell
+        
+        int sell=prices[ind]+helper(ind+1,Tcount+1,prices,k);
+        int skip=0+helper(ind+1,Tcount,prices,k);
+        profit=Math.max(sell,skip);
+        }
+        
+        
+        return profit;
+    }
+
+
+Solution 2: Recursion with Memoization (Top-Down DP)
+
+Time Complexity: O(N * 4) = O(N) (since at most N * 4 states are computed).
+Space Complexity: O(N * 4) = O(N) (for DP table)+ O(N) (for recursion stack).
+
+Steps:
+Use a 2D DP table dp[ind][Tcount] initialized to -1.
+Modify the recursive function:
+If dp[ind][Tcount] is already computed, return its value.
+Otherwise, compute it using the same logic as in Solution 1.
+Store the result in dp[ind][Tcount] before returning.
+Return the value stored in dp[0][0].
+
+ public static int maxProfit(int[] prices) {
+        // code here
+        
+        int [][] dp=new int [prices.length][2*2];
+        for(int [] row:dp){
+            Arrays.fill(row,-1);
+        }
+        
+        return helper(0,0,prices,2,dp);  // Maximum 2 transations
+    }
+    
+    public static int helper(int ind,int Tcount,int[] prices,int k,int [][] dp){
+        // Base Case
+        if(ind==prices.length || Tcount==2*k){
+            return 0;
+        }
+        
+        if(dp[ind][Tcount]!=-1) return dp[ind][Tcount];
+        
+        int profit=0;
+        if(Tcount%2==0){ // Buy
+        
+        int buy=-prices[ind]+helper(ind+1,Tcount+1,prices,k,dp);
+        int skip=0+helper(ind+1,Tcount,prices,k,dp);
+        profit=Math.max(buy,skip);
+        
+        }
+        
+        else{// sell
+        
+        int sell=prices[ind]+helper(ind+1,Tcount+1,prices,k,dp);
+        int skip=0+helper(ind+1,Tcount,prices,k,dp);
+        profit=Math.max(sell,skip);
+        }
+        
+        
+        dp[ind][Tcount]=profit;
+        
+        return dp[ind][Tcount];
+    }
+
+
+
+
+Solution 3: Bottom-Up DP (Tabulation)
+
+Time Complexity: O(N * 4) = O(N) (nested loops).
+Space Complexity: O(N * 4) = O(N) (DP table).
+
+Steps:
+Create a 2D DP table dp[n+1][4] initialized to 0.
+Iterate ind from n-1 to 0 and Tcount from 3 to 0.
+If Tcount % 2 == 0, it's a buying step:
+Compute buy = -prices[ind] + dp[ind+1][Tcount+1]
+Compute skip = dp[ind+1][Tcount]
+Store dp[ind][Tcount] = max(buy, skip).
+If Tcount % 2 == 1, it's a selling step:
+Compute sell = prices[ind] + dp[ind+1][Tcount+1]
+Compute skip = dp[ind+1][Tcount]
+Store dp[ind][Tcount] = max(sell, skip).
+Return dp[0][0].
+public static int maxProfit(int[] prices) {
+        // code here
+        
+        int n=prices.length;
+        
+        int [][] dp=new int [n+1][2*2+1];
+        for(int ind=n-1;ind>=0;ind--){
+            for(int Tcount=2*2-1;Tcount>=0;Tcount--){
+                int profit=0;
+                if(Tcount%2==0){ // Buy
+                int buy=-prices[ind]+dp[ind+1][Tcount+1];
+                int skip=0+dp[ind+1][Tcount];
+                profit=Math.max(buy,skip);
+                    
+                }
+                else{// sell
+                int sell=prices[ind]+dp[ind+1][Tcount+1];
+                int skip=0+dp[ind+1][Tcount];
+                profit=Math.max(sell,skip);
+                    
+                }
+                
+                dp[ind][Tcount]=profit;
+                
+            }
+        }
+        
+        return dp[0][0];
+
+    }
+
+
+
+
+Solution 4: Space-Optimized DP
+
+Time Complexity: O(N * 4) = O(N).
+Space Complexity: O(4) = O(1) (constant space).
+
+Steps:
+Use two 1D arrays after and curr of size 4.
+Iterate ind from n-1 to 0, updating curr based on after.
+If Tcount % 2 == 0, it's a buying step:
+Compute buy = -prices[ind] + after[Tcount+1]
+Compute skip = after[Tcount]
+Store curr[Tcount] = max(buy, skip).
+If Tcount % 2 == 1, it's a selling step:
+Compute sell = prices[ind] + after[Tcount+1]
+Compute skip = after[Tcount]
+Store curr[Tcount] = max(sell, skip).
+Copy curr into after for the next iteration.
+Return curr[0].
+
+
+public static int maxProfit(int[] prices) {
+        // code here
+        
+        int n=prices.length;
+        
+        int [] after=new int [2*2+1];
+        int [] curr=new int [2*2+1];
+        
+        for(int ind=n-1;ind>=0;ind--){
+            for(int Tcount=2*2-1;Tcount>=0;Tcount--){
+                int profit=0;
+                if(Tcount%2==0){ // Buy
+                int buy=-prices[ind]+after[Tcount+1];
+                int skip=0+after[Tcount];
+                profit=Math.max(buy,skip);
+                    
+                }
+                else{// sell
+                int sell=prices[ind]+after[Tcount+1];
+                int skip=0+after[Tcount];
+                profit=Math.max(sell,skip);
+                    
+                }
+                
+                curr[Tcount]=profit;
+                
+            }
+            after=curr;
+        }
+        
+        return curr[0];
+
+    }

@@ -1,0 +1,173 @@
+Stickler Thief
+Stickler the thief wants to loot money from the houses arranged in a line. He cannot loot two consecutive houses and aims to maximize his total loot.
+Given an array, arr[] where arr[i] represents the amount of money in the i-th house.
+Determine the maximum amount he can loot.
+Examples:
+Input: arr[] = [6, 5, 5, 7, 4]
+Output: 15
+Explanation: Maximum amount he can get by looting 1st, 3rd and 5th house. Which is 6 + 5 + 4 = 15.
+
+Input: arr[] = [1, 5, 3]
+Output: 5
+Explanation: Loot only 2nd house and get maximum amount of 5.
+
+Input: arr[] = [4, 4, 4, 4]
+Output: 8
+Explanation: The optimal choice is to loot every alternate house. Looting the 1st and 3rd houses, or the 2nd and 4th, both give a maximum total of 4 + 4 = 8.
+
+Constraints:
+1 ≤ arr.size() ≤ 10^5
+1 ≤ arr[i] ≤ 10^4
+
+Expected Complexities
+Time Complexity: O(n)Auxiliary Space: O(1)
+
+
+
+
+Solution 1: Recursion (Brute Force)
+Time Complexity:O(2^n) (Exponential) Each house has two choices, leading to a binary tree recursion.
+Space Complexity: O(n) (Recursion Stack) The depth of recursion is at most n.
+Steps:
+Define a recursive function helper(arr, index).
+Base case: If index exceeds the array length, return 0.
+Recursive cases:
+Take the current house (arr[index]) and move to index + 2.
+Skip the current house and move to index + 1.
+Return the maximum of the two choices.
+ public int findMaxSum(int arr[]) {
+        // code here
+        
+        
+        return helper(arr,0);
+        
+    }
+    
+     public static int helper(int[] arr, int index) {
+        if (index >= arr.length) {
+            return 0; // Base case: No more houses left
+        }
+        
+        // Take the current house and move to index + 2
+        int take = arr[index] + helper(arr, index + 2);
+        
+        // Skip the current house and move to index + 1
+        int notTake = helper(arr, index + 1);
+        
+        // Return the maximum of both choices
+        return Math.max(take, notTake);
+    }
+
+
+
+
+Solution 2: Recursion + Memoization (Top-Down DP)
+Time Complexity:O(n) (Each state is computed once)
+Space Complexity: O(n) (Recursion Stack + DP array)
+Steps:
+Use a dp array to store results and avoid recomputation.
+If dp[index] is already computed, return it.
+Otherwise, compute:
+Take the current house (arr[index]) and move to index + 2.
+Skip the current house and move to index + 1.
+Store the maximum in dp[index] and return it.
+
+ public int findMaxSum(int arr[]) {
+        // code here
+        int n=arr.length;
+         int[] dp = new int[n]; // Memoization array
+        Arrays.fill(dp, -1); // Initialize with -1 (uncomputed state)
+        
+        return helper(arr,0,dp);
+        
+    }
+    
+     public static int helper(int[] arr, int index,int[] dp) {
+        if (index >= arr.length) {
+            return 0; // Base case: No more houses left
+        }
+        
+        if(dp[index]!=-1) return dp[index];
+        
+        // Take the current house and move to index + 2
+        int take = arr[index] + helper(arr, index + 2,dp);
+        
+        // Skip the current house and move to index + 1
+        int notTake = helper(arr, index + 1,dp);
+        
+        // Return the maximum of both choices
+        return dp[index]=Math.max(take, notTake);
+    }
+
+
+
+
+Solution 3: Tabulation (Bottom-Up DP)
+
+Time Complexity:O(n) (Single loop over n elements)
+Space Complexity: O(n) (DP array)
+Steps:
+Create a dp array of size n+1 (to avoid out-of-bounds cases).
+Set dp[n] = 0 (no house to loot).
+Set dp[n-1] = arr[n-1] (last house loot).
+Iterate from n-2 to 0, updating:
+dp[index] = max(arr[index] + dp[index+2], dp[index+1])
+Return dp[0].
+
+public int findMaxSum(int arr[]) {
+        // code here
+        int n=arr.length;
+        
+        int[] dp = new int[n + 1]; // DP array with extra space to handle out-of-bounds cases
+        dp[n] = 0; // No houses left to loot
+        dp[n - 1] = arr[n - 1]; // If only one house left, loot it
+
+        for (int index = n - 2; index >= 0; index--) {
+            int take = arr[index] + dp[index + 2]; // Loot current house + next non-adjacent house
+            int notTake = dp[index + 1]; // Skip current house
+
+            dp[index] = Math.max(take, notTake);
+        }
+
+        return dp[0]; // Maximum loot possible
+    }
+    
+
+
+
+
+Solution 4: Space-Optimized DP (Bottom-Up with Variables)
+
+Time Complexity:O(n) (Single loop over n elements)
+Space Complexity:O(1) (Only two extra variables)
+Steps:
+Use two variables, next1 (last house) and next2 ( No house after last one).
+Iterate from n-2 to 0, updating:
+curr = max(arr[index] + next2, next1)
+Shift values: next2 = next1, next1 = curr
+Return next1.
+
+
+ public int findMaxSum(int arr[]) {
+        // code here
+        int n=arr.length;
+        int next1 = arr[n - 1]; // Loot from last house
+        int next2 = 0; // No house after last one
+
+        for (int index = n - 2; index >= 0; index--) {
+            int take = arr[index] + next2; // Loot current house + next non-adjacent house
+            int notTake = next1; // Skip current house
+
+            int curr = Math.max(take, notTake); // Max loot at this step
+            next2 = next1; // Move next1 to next2
+            next1 = curr; // Update next1 with the new max
+        }
+
+        return next1; // Maximum loot possible
+        
+       
+    }
+
+
+
+

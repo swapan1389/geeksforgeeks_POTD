@@ -1,0 +1,199 @@
+Stickler Thief II
+You are given an array arr[] which represents houses arranged in a circle, where each house has a certain value. A thief aims to maximize the total stolen value without robbing two adjacent houses.
+Determine the maximum amount the thief can steal.
+
+Note: Since the houses are in a circle, the first and last houses are also considered adjacent.
+
+Examples:
+
+Input: arr[] = [2, 3, 2]
+Output: 3
+Explanation: arr[0] and arr[2] can't be robbed because they are adjacent houses. Thus, 3 is the maximum value thief can rob.
+
+Input: arr[] = [1, 2, 3, 1]
+Output: 4
+Explanation: Maximum stolen value: arr[0] + arr[2] = 1 + 3 = 4
+
+Input: arr[] = [2, 2, 3, 1, 2]
+Output: 5
+Explanation: Maximum stolen value: arr[0] + arr[2] = 2 + 3 = 5 or arr[2] + arr[4] = 3 + 2 = 5
+
+Constraints:
+2 ≤ arr.size() ≤ 10^5
+0 ≤ arr[i] ≤ 10^4
+
+Expected Complexities
+Time Complexity: O(n)Auxiliary Space: O(1)
+
+
+
+1. Recursion (Without Memoization)
+Time Complexity:O(2^n) (Exponential) Each house has two choices (rob or skip), leading to a tree of recursive calls.
+Space Complexity: O(n) (Recursion stack space in the worst case)
+
+Steps:
+Base Case: If the index goes beyond the range, return 0.
+Recursive Case:
+Pick the current house and move to index +2.
+Skip the current house and move to index +1.
+Return Maximum: Between picking and skipping.
+Since the houses are circular, solve the problem twice:
+Case 1: Exclude the last house (Index 0 to n-2).
+Case 2: Exclude the first house (Index 1 to n-1).
+Take the maximum of both cases.
+
+ int maxValue(int[] arr) {
+        // code here
+        if(arr.length==1) return arr[0]; // If there's only one house, steal from it.
+        return Math.max(helper(arr,0,arr.length-2),helper(arr,1,arr.length-1));
+    }
+    
+    public int helper(int[] arr,int index,int end){
+        if(index>end){
+            return 0; // Base case: No houses left
+        }
+        
+         // Take the current house and move to index + 2
+         int take=arr[index]+helper(arr,index+2,end);
+         
+        // Skip the current house and move to index + 1
+        int notTake=0+helper(arr,index+1,end);
+        
+        
+        return Math.max(take,notTake);
+        
+    }
+
+
+
+
+2. Recursion with Memoization (Top-Down DP)
+Time Complexity: O(n) . Each subproblem is computed once and stored in dp[].
+Space Complexity: O(n) (For dp[] and recursion stack)
+Steps:
+Initialize DP Array: Fill it with -1 to indicate uncomputed states.
+Recursive Approach with Memoization:
+If already computed, return stored value.
+If not, compute take and notTake recursively and store the result in dp[].
+Solve for Two Cases:
+Exclude last house (Index 0 to n-2).
+Exclude first house (Index 1 to n-1).
+Return Maximum of Both Cases.
+
+int maxValue(int[] arr) {
+        // code here
+        if(arr.length==1) return arr[0]; // If there's only one house, steal from it.
+        // Initialize DP arrays with -1 (uncomputed states)
+        int[] dp1 = new int[arr.length]; 
+        int[] dp2 = new int[arr.length]; 
+        Arrays.fill(dp1, -1);
+        Arrays.fill(dp2, -1);
+        return Math.max(helper(arr,0,arr.length-2,dp1),helper(arr,1,arr.length-1,dp2));
+    }
+    
+    public int helper(int[] arr,int index,int end,int [] dp){
+        if(index>end){
+            return 0; // Base case: No houses left
+        }
+        
+        if(dp[index]!=-1) return dp[index];
+        
+         // Take the current house and move to index + 2
+         int take=arr[index]+helper(arr,index+2,end,dp);
+         
+        // Skip the current house and move to index + 1
+        int notTake=0+helper(arr,index+1,end,dp);
+        
+         // Return the maximum of both choices
+        return Math.max(take,notTake);
+        
+    }
+
+
+
+
+3. Bottom-Up DP (Tabulation)
+Time Complexity: O(n) Iterative approach, solving each subproblem once.
+Space Complexity: O(n) (For dp[] array)
+
+Steps:
+Initialize DP Array: dp[n+2] to avoid out-of-bounds issues.
+Base Case:
+dp[n] = 0 (No houses left).
+dp[n-1] = arr[end] (Only one house left).
+Fill DP Array:
+Iterate from n-2 to 0 and compute dp[i] using:
+take = arr[start + index] + dp[index + 2]
+notTake = dp[index + 1]
+dp[index] = max(take, notTake)
+Solve for Two Cases:
+Exclude last house (0 to n-2).
+Exclude first house (1 to n-1).
+Return Maximum of Both Cases.
+ int maxValue(int[] arr) {
+        // code here
+        int n = arr.length;
+        if (n == 1) return arr[0]; // If only one house, loot it
+
+        return Math.max(robLinear(arr, 0, n - 2), robLinear(arr, 1, n - 1));
+    }
+
+    private int robLinear(int[] arr, int start, int end) {
+        if (start > end) return 0;
+
+        int n = end - start + 1;
+        int[] dp = new int[n + 2]; // Extra space to avoid out-of-bounds cases
+        dp[n] = 0; // No houses left
+        dp[n - 1] = arr[end]; // Only one house left, loot it
+
+        for (int index = n - 2; index >= 0; index--) {
+            int take = arr[start + index] + dp[index + 2]; // Loot current + non-adjacent
+            int notTake = dp[index + 1]; // Skip current house
+
+            dp[index] = Math.max(take, notTake);
+        }
+
+        return dp[0]; // Maximum loot possible
+    }
+
+
+
+4. Space Optimized DP (Bottom-Up with Two Variables)
+Time Complexity: O(n) Iterative approach, solving each subproblem once.
+Space Complexity:O(1) (Only uses two variables)
+Steps:
+Initialize Two Variables:
+next1 = arr[end] (Holds max value for last house).
+next2 = 0 (Holds max value for house beyond last).
+Iterate in Reverse:
+Compute take = arr[index] + next2
+Compute notTake = next1
+Update next2 = next1
+Update next1 = max(take, notTake)
+Solve for Two Cases:
+Exclude last house (0 to n-2).
+Exclude first house (1 to n-1).
+Return Maximum of Both Cases.
+
+ int maxValue(int[] arr) {
+        // code here
+         int n = arr.length;
+    if (n == 1) return arr[0];
+
+    return Math.max(robLinear(arr, 0, n - 2), robLinear(arr, 1, n - 1));
+}
+
+private int robLinear(int[] arr, int start, int end) {
+    int next1 = arr[end], next2 = 0; 
+
+    for (int index = end-1; index >= start; index--) {
+        int take = arr[index] + next2;
+        int notTake = next1;
+
+        int curr = Math.max(take, notTake);
+        next2 = next1;
+        next1 = curr;
+    }
+
+    return next1;
+}

@@ -1,0 +1,214 @@
+Total Decoding Messages
+A message containing letters A-Z is being encoded to numbers using the following mapping:
+
+'A' -> 1
+'B' -> 2
+...
+'Z' -> 26
+
+You are given a string digits. You have to determine the total number of ways that message can be decoded.
+
+Examples:
+
+Input: digits = "123"
+Output: 3
+Explanation: "123" can be decoded as "ABC"(1, 2, 3), "LC"(12, 3) and "AW"(1, 23).
+Input: digits = "90"
+Output: 0
+Explanation: "90" cannot be decoded, as it's an invalid string and we cannot decode '0'.
+Input: digits = "05"
+Output: 0
+Explanation: "05" cannot be mapped to "E" because of the leading zero ("5" is different from "05"), the string is not a valid encoding message.
+Constraints:
+1 ≤ digits.size() ≤ 10^3
+
+
+Expected Complexities
+Time Complexity: O(n)Auxiliary Space: O(1)
+
+
+Solution 1: Recursion (Brute Force)
+Steps:
+If digits is empty or null, return 0.
+Use a recursive helper function to explore all possible decoding paths.
+If the index reaches the end, return 1 (valid decoding).
+If the current character is '0', return 0 (invalid decoding).
+Recursively call the function for a single-character decoding.
+If a two-character substring (index i to i+1) is between 10 and 26, recursively call for that as well.
+Sum both recursive calls.
+ public int countWays(String digits) {
+        // code here
+        
+        if(digits==null || digits.length()==0) return 0;
+        
+        return helper(digits,0);
+        
+    }
+    
+    public int helper(String digits,int index){
+        if(index==digits.length()) return 1; // Reached end, count as 1 way
+        
+        if(digits.charAt(index)=='0') return 0; // Leading zeros not allowed
+        // Single digit decoding
+        int count=helper(digits,index+1);
+        
+        if(index<digits.length()-1){
+            int num=Integer.parseInt(digits.substring(index,index+2));
+            if(num>=10 && num <=26){
+                count+=helper(digits,index+2);
+            }
+        }
+        
+        return count;
+    }
+Time Complexity:
+O(2^n) (Each character has up to two choices)
+Exponential growth leads to TLE for large n.
+Space Complexity:
+O(n) (Recursive call stack depth in worst case)
+
+
+
+
+
+Solution 2: Recursion + Memoization (Top-Down DP)
+Steps:
+Use an integer array dp[] initialized to -1 to store already computed results.
+Follow the same recursive logic as Solution 1.
+Before making a recursive call, check if dp[index] is already computed to avoid redundant calculations.
+Store the result in dp[index] before returning.
+
+
+ public int countWays(String digits) {
+        // code here
+        
+        if(digits==null || digits.length()==0) return 0;
+        int n=digits.length();
+        
+        int [] dp=new int[n];
+        Arrays.fill(dp,-1);
+        
+        return helper(digits,0,dp);
+        
+    }
+    
+    public int helper(String digits,int index,int [] dp){
+        if(index==digits.length()) return 1; // Reached end, count as 1 way
+        
+        if(digits.charAt(index)=='0') return 0; // Leading zeros not allowed
+        
+        if(dp[index]!=-1) return dp[index];
+        // Single digit decoding
+        int count=helper(digits,index+1,dp);
+        
+        if(index<digits.length()-1){
+            int num=Integer.parseInt(digits.substring(index,index+2));
+            if(num>=10 && num <=26){
+                count+=helper(digits,index+2,dp);
+            }
+        }
+        
+        return dp[index]=count;
+    }
+Time Complexity:
+O(n) (Each subproblem is computed once)
+Space Complexity:
+O(n) (Memoization array + recursion stack)
+
+
+
+Solution 3: Bottom-Up DP (Tabulation)
+Steps:
+Create a dp array where dp[i] stores the number of ways to decode from index i to end.
+Initialize base cases:
+dp[n] = 1 (Empty string case)
+dp[n-1] = 1 if digits[n-1] ≠ '0', else 0.
+Iterate backwards from n-2 to 0:
+If digits[i] is '0', set dp[i] = 0.
+Otherwise, set dp[i] = dp[i+1].
+If digits[i] and digits[i+1] form a valid number (10-26), add dp[i+2].
+Return dp[0].
+
+
+ public int countWays(String digits) {
+        // code here
+        if (digits == null || digits.length() == 0 || digits.charAt(0) == '0') {
+            return 0; // Invalid input case
+        }
+
+        int n = digits.length();
+        int[] dp = new int[n + 1]; // dp[i] represents ways to decode digits[i...n-1]
+        dp[n] = 1; // Base case: empty string has 1 way
+        dp[n - 1] = (digits.charAt(n - 1) == '0') ? 0 : 1; // Base case: last digit
+
+        for (int i = n - 2; i >= 0; i--) {
+            if (digits.charAt(i) == '0') {
+                dp[i] = 0;
+                continue;
+            }
+
+            dp[i] = dp[i + 1]; // Single digit decoding
+
+            int num = Integer.parseInt(digits.substring(i, i + 2));
+            if (num >= 10 && num <= 26) {
+                dp[i] += dp[i + 2]; // Two-digit decoding
+            }
+        }
+
+        return dp[0];
+    }
+Time Complexity:
+O(n) (Single pass from right to left)
+Space Complexity:
+O(n) (Array storage)
+
+
+
+Solution 4: Optimized DP (Space-Optimized Bottom-Up)
+Steps:
+Instead of using an array, use two variables (dp1 and dp2):
+dp2 represents dp[i+2]
+dp1 represents dp[i+1]
+Initialize:
+dp2 = 1
+dp1 = 1 if the last character is not 0, otherwise 0
+Iterate backwards and update dp1 and dp2 iteratively.
+Return dp1 after processing.
+
+
+ public int countWays(String digits) {
+        // code here
+        if (digits == null || digits.length() == 0 || digits.charAt(0) == '0') {
+            return 0; // Invalid input case
+        }
+
+        int n = digits.length();
+        
+        int dp2=1 ; // dp[n] = 1; // Base case: empty string has 1 way
+        int dp1=(digits.charAt(n - 1) == '0') ? 0 : 1; // dp[n - 1] = (digits.charAt(n - 1) == '0') ? 0 : 1; // Base case: last digit
+
+        for (int i = n - 2; i >= 0; i--) {
+            int dp=0;
+            if(digits.charAt(i) != '0'){
+                dp=dp1;
+                int num = Integer.parseInt(digits.substring(i, i + 2));
+                if (num >= 10 && num <= 26) {
+                dp+= dp2; // Two-digit decoding
+                }
+                
+            }
+            
+            dp2=dp1;
+            dp1=dp;
+
+
+        }
+
+        return dp1;
+    }
+
+
+Time Complexity:
+O(n) (Single pass)
+Space Complexity:
+O(1) (Only two integer variables)

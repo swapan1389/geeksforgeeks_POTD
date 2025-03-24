@@ -1,0 +1,143 @@
+Matrix Chain Multiplication
+Given an array arr[] which represents the dimensions of a sequence of matrices where the ith matrix has the dimensions (arr[i-1] x arr[i]) for i>=1, find the most efficient way to multiply these matrices together. The efficient way is the one that involves the least number of multiplications.
+Examples:
+Input: arr[] = [2, 1, 3, 4]
+Output: 20
+Explanation: There are 3 matrices of dimensions 2 × 1, 1 × 3, and 3 × 4, Let this 3 input matrices be M1, M2, and M3. There are two ways to multiply: ((M1 x M2) x M3) and (M1 x (M2 x M3)), note that the result of (M1 x M2) is a 2 x 3 matrix and result of (M2 x M3) is a 1 x 4 matrix. 
+((M1 x M2) x M3)  requires (2 x 1 x 3) + (2 x 3 x 4) = 30 
+(M1 x (M2 x M3))  requires (1 x 3 x 4) + (2 x 1 x 4) = 20. 
+The minimum of these two is 20.
+
+Input: arr[] = [1, 2, 3, 4, 3]
+Output: 30
+Explanation: There are 4 matrices of dimensions 1 × 2, 2 × 3, 3 × 4, 4 × 3. Let this 4 input matrices be M1, M2, M3 and M4. The minimum number of multiplications are obtained by ((M1 x M2) x M3) x M4). The minimum number is (1 x 2 x 3) + (1 x 3 x 4) + (1 x 4 x 3) = 30.
+
+Input: arr[] = [3, 4]
+Output: 0
+Explanation: As there is only one matrix so, there is no cost of multiplication.
+
+Constraints: 
+2 ≤ arr.size() ≤ 100
+1 ≤ arr[i] ≤ 200
+
+
+Expected Complexities
+Time Complexity: O(n^3)Auxiliary Space: O(n^2)
+
+Solution 1: Recursion (Naïve Approach)
+
+Time Complexity:T(n) = ∑ (T(k) + T(n-k)) leads to O(2ⁿ) (exponential).
+Space Complexity: O(n) (due to recursive call stack).
+
+Steps:
+Start with i = 1 and j = n-1, where n is the length of the array.
+If i == j, return 0, because multiplying a single matrix has no cost.
+Try all possible partitions k between i and j.
+Compute the cost for multiplying matrices in the left partition (i to k).
+Compute the cost for multiplying matrices in the right partition (k+1 to j).
+Add the multiplication cost for merging the two partitions:
+Cost = arr[i-1] × arr[k] × arr[j] + cost of left partition + cost of right partition.
+Store the minimum cost among all possible partitions.
+Return the minimum cost.
+
+static int matrixMultiplication(int arr[]) {
+        // code here
+        return helper(1,arr.length-1,arr);
+    }
+    
+    static int helper(int i,int j,int[] arr){
+        if(i==j) return 0;
+        int min=Integer.MAX_VALUE;
+        
+        for(int k=i;k<j;k++){
+            int steps=arr[i-1]*arr[k]*arr[j]+helper(i,k,arr)+helper(k+1,j,arr);
+            min=Math.min(min,steps);
+        }
+        
+        return min;
+        
+    }
+
+Solution 2: Memoization (Top-Down DP)
+Time Complexity: O(n³) (since each subproblem (i, j) is computed once and takes O(n) time due to the loop over k).
+Space Complexity: O(n²) (for the DP table) + O(n) (recursive call stack) → O(n²).
+
+
+This is an optimized recursive approach that avoids redundant calculations by storing results in a dp[][] table.
+Steps:
+Create a dp[][] table initialized with -1 to store computed values.
+Use recursion similar to the first approach.
+Before computing for (i, j), check if dp[i][j] is already computed:
+If dp[i][j] != -1, return it.
+If i == j, return 0.
+Try all partitions k between i and j:
+Compute the cost recursively for left (i, k) and right (k+1, j).
+Compute the cost for merging: arr[i-1] * arr[k] * arr[j] + left_cost + right_cost.
+Store the minimum cost in dp[i][j].
+Return dp[i][j].
+
+
+
+ static int matrixMultiplication(int arr[]) {
+        // code here
+        int n=arr.length;
+        int [] [] dp=new int [n][n];
+        for(int [] row:dp){
+            Arrays.fill(row,-1);
+        }
+        return helper(1,arr.length-1,arr,dp);
+    }
+    
+    static int helper(int i,int j,int[] arr,int[][] dp){
+        if(i==j) return 0;
+        if(dp[i][j]!=-1) return dp[i][j];
+        int min=Integer.MAX_VALUE;
+        
+        for(int k=i;k<j;k++){
+            int steps=arr[i-1]*arr[k]*arr[j]+helper(i,k,arr,dp)+helper(k+1,j,arr,dp);
+            min=Math.min(min,steps);
+        }
+        
+        return dp[i][j]=min;
+        
+    }
+
+
+Solution 3: Bottom-Up Dynamic Programming (Tabulation)
+
+Time Complexity: O(n³) (double for loop runs O(n²) times, and each iteration does O(n) work).
+Space Complexity: O(n²) (for the DP table).
+
+This is an iterative DP approach that builds the solution bottom-up without recursion.
+Steps:
+Create a dp[][] table initialized with 0.
+Iterate over matrix chain lengths from 2 to n-1:
+length = 2, 3, 4, ...
+For each length, iterate over i (starting index):
+Compute j = i + length - 1 (ending index).
+Try all partitions k between i and j:
+Compute cost: arr[i-1] * arr[k] * arr[j] + dp[i][k] + dp[k+1][j]
+Store the minimum cost in dp[i][j].
+Return dp[1][n-1] as the final answer.
+
+
+static int matrixMultiplication(int arr[]) {
+        // code here
+        int n=arr.length;
+        int [][] dp=new int [n][n];
+        
+        for(int i=n-1;i>=1;i--){
+            
+            for(int j=i+1;j<n;j++){
+                int min=Integer.MAX_VALUE;
+                for(int k=i;k<j;k++){
+                    int steps=arr[i-1]*arr[k]*arr[j]+dp[i][k]+dp[k+1][j];
+                    min=Math.min(min,steps);
+                    dp[i][j]=min;
+                    
+                }
+            }
+        }
+
+        return dp[1][n-1];
+    }

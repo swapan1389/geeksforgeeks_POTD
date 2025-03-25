@@ -1,0 +1,208 @@
+Boolean Parenthesization
+You are given a boolean expression s containing
+    'T' ---> true
+    'F' ---> false 
+and following operators between symbols
+   &   ---> boolean AND
+    |   ---> boolean OR
+   ^   ---> boolean XOR
+Count the number of ways we can parenthesize the expression so that the value of expression evaluates to true.
+
+Note: The answer is guaranteed to fit within a 32-bit integer.
+
+Examples:
+
+Input: s = "T|T&F^T"
+Output: 4
+Explaination: The expression evaluates to true in 4 ways: ((T|T)&(F^T)), (T|(T&(F^T))), (((T|T)&F)^T) and (T|((T&F)^T)).
+Input: s = "T^F|F"
+Output: 2
+Explaination: The expression evaluates to true in 2 ways: ((T^F)|F) and (T^(F|F)).
+Constraints:
+1 ≤ |s| ≤ 100 
+
+
+Expected Complexities
+Time Complexity: O(n^3) Auxiliary Space: O(n^2)
+
+
+Solution 1: Recursion (Naive Approach)
+Time Complexity : Overall Complexity: O(4^n) (exponential growth).
+Space Complexity : Recursive Stack Space: O(n) (depth of recursion).
+
+Steps:
+Base Case Handling
+If i > j, return 0.
+If i == j, return 1 if the character matches isTrue, else return 0.
+Recursive Partitioning
+Iterate over all operators (&, |, ^).
+Compute values for left and right subexpressions recursively.
+Evaluate Boolean Expression
+Apply boolean logic based on the operator.
+Sum up the number of ways that result in True.
+
+static int countWays(String s) {
+        // code here
+        
+        return solve(s,0,s.length()-1,1); // 1 is true and 0 is false
+    }
+    
+    static int solve(String s,int i,int j,int isTrue){
+        // Base Cases
+        if(i>j) return 0; // when partion ends
+        if(i==j){ // Base case: single character
+            if(isTrue==1){
+                return s.charAt(i)=='T'?1:0;
+            }
+            else{
+                return s.charAt(i)=='F'?1:0;
+            }
+        }
+        
+        int ways = 0;
+        for(int k=i+1;k<=j-1;k+=2){  // Iterate over operators
+        
+        int lefttrue=solve(s,i,k-1,1);
+        int leftfalse=solve(s,i,k-1,0);
+        int righttrue=solve(s,k+1,j,1);
+        int rightfalse=solve(s,k+1,j,0);
+        
+        char op=s.charAt(k);
+        if (op == '&') {
+                if (isTrue == 1) ways += lefttrue * righttrue;
+                else ways += leftfalse * righttrue + lefttrue * rightfalse + leftfalse * rightfalse;
+            } else if (op == '|') {
+                if (isTrue == 1) ways += lefttrue * righttrue + lefttrue * rightfalse + leftfalse * righttrue;
+                else ways += leftfalse * rightfalse;
+            } else if (op == '^') {
+                if (isTrue == 1) ways += lefttrue * rightfalse + leftfalse * righttrue;
+                else ways += lefttrue * righttrue + leftfalse * rightfalse;
+            }
+            
+        }
+        
+        return ways;
+    }
+
+
+
+
+Solution 2: Memoization (Top-Down DP)
+Time Complexity: Overall Complexity: O(n^3).
+Space Complexity:
+DP Table: O(n^2) (for storing results of subproblems).
+Recursive Stack Space: O(n) (depth of recursion).
+
+Steps:
+Initialize a DP Table with -1.
+Modify the Recursive Function
+If dp[i][j][isTrue] is already computed, return it.
+Otherwise, compute it and store it.
+Same Recursive Logic as Solution 1, but avoid recomputing by storing results in dp.
+
+ static int countWays(String s) {
+        // code here
+        int n=s.length();
+        int [][][] dp=new int [n][n][2];
+        for(int [][] row:dp){
+            for(int [] col:row){
+                Arrays.fill(col,-1);
+            }
+        }
+        return solve(s,0,n-1,1,dp); // 1 is true and 0 is false
+    }
+    
+    static int solve(String s,int i,int j,int isTrue,int [][][] dp){
+        // Base Cases
+        if(i>j) return 0; // when partion ends
+        if(i==j){ // Base case: single character
+            if(isTrue==1){
+                return s.charAt(i)=='T'?1:0;
+            }
+            else{
+                return s.charAt(i)=='F'?1:0;
+            }
+        }
+        
+        if(dp[i][j][isTrue]!=-1) return dp[i][j][isTrue];
+        
+        int ways = 0;
+        for(int k=i+1;k<=j-1;k+=2){  // Iterate over operators
+        
+        int lefttrue=solve(s,i,k-1,1,dp);
+        int leftfalse=solve(s,i,k-1,0,dp);
+        int righttrue=solve(s,k+1,j,1,dp);
+        int rightfalse=solve(s,k+1,j,0,dp);
+        
+        char op=s.charAt(k);
+        if (op == '&') {
+                if (isTrue == 1) ways += lefttrue * righttrue;
+                else ways += leftfalse * righttrue + lefttrue * rightfalse + leftfalse * rightfalse;
+            } else if (op == '|') {
+                if (isTrue == 1) ways += lefttrue * righttrue + lefttrue * rightfalse + leftfalse * righttrue;
+                else ways += leftfalse * rightfalse;
+            } else if (op == '^') {
+                if (isTrue == 1) ways += lefttrue * rightfalse + leftfalse * righttrue;
+                else ways += lefttrue * righttrue + leftfalse * rightfalse;
+            }
+            
+        }
+        
+        return dp[i][j][isTrue]=ways;
+    }
+
+
+
+
+
+
+Solution 3: Bottom-Up DP (Tabulation)
+Time Complexity : Overall Complexity: O(n^3).
+Space Complexity : DP Table: O(n^2) (for storing results of subproblems).
+
+
+Steps:
+Initialize the DP Table for base cases (i == j).
+Iterate from Smaller to Larger Subproblems
+Loop over increasing i and j.
+Iterate over possible partition points k.
+Compute Boolean Outcomes Using DP Table
+Apply the same boolean logic rules as in the previous solutions.
+Store the result in dp[i][j][isTrue].
+Final Result: The answer is stored in dp[0][n-1][1].
+
+
+static int countWays(String s) {
+        // code here
+        int n = s.length();
+        int[][][] dp = new int[n][n][2];
+        
+        for (int i = 0; i < n; i++) {
+            dp[i][i][1] = (s.charAt(i) == 'T') ? 1 : 0;
+            dp[i][i][0] = (s.charAt(i) == 'F') ? 1 : 0;
+        }
+        
+        for (int i = n - 1; i >= 0; i--) {
+            for (int j = i + 1; j < n; j++) {
+                for (int k = i + 1; k < j; k += 2) {
+                    char op = s.charAt(k);
+                    int leftTrue = dp[i][k - 1][1];
+                    int leftFalse = dp[i][k - 1][0];
+                    int rightTrue = dp[k + 1][j][1];
+                    int rightFalse = dp[k + 1][j][0];
+                    
+                    if (op == '&') {
+                        dp[i][j][1] += leftTrue * rightTrue;
+                        dp[i][j][0] += leftFalse * rightTrue + leftTrue * rightFalse + leftFalse * rightFalse;
+                    } else if (op == '|') {
+                        dp[i][j][1] += leftTrue * rightTrue + leftTrue * rightFalse + leftFalse * rightTrue;
+                        dp[i][j][0] += leftFalse * rightFalse;
+                    } else if (op == '^') {
+                        dp[i][j][1] += leftTrue * rightFalse + leftFalse * rightTrue;
+                        dp[i][j][0] += leftTrue * rightTrue + leftFalse * rightFalse;
+                    }
+                }
+            }
+        }
+        return dp[0][n - 1][1];
+    }

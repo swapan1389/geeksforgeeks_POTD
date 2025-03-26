@@ -1,0 +1,135 @@
+Word Break
+You are given a string s and a list dictionary[] of words. Your task is to determine whether the string s can be formed by concatenating one or more words from the dictionary[].
+Note: From dictionary[], any word can be taken any number of times and in any order.
+Examples :
+Input: s = "ilike", dictionary[] = ["i", "like", "gfg"]
+Output: true
+Explanation: s can be breakdown as "i like".
+
+Input: s = "ilikegfg", dictionary[] = ["i", "like", "man", "india", "gfg"]
+Output: true
+Explanation: s can be breakdown as "i like gfg".
+
+Input: s = "ilikemangoes", dictionary[] = ["i", "like", "man", "india", "gfg"]
+Output: false
+Explanation: s cannot be formed using dictionary[] words.
+
+Constraints:
+1 ≤ s.size() ≤ 3000
+1 ≤ dictionary.size() ≤ 1000
+1 ≤ dictionary[i].size() ≤ 100
+
+
+
+Expected Complexities
+Time Complexity: O(n * m)Auxiliary Space: O(n)
+
+
+Step-by-Step Breakdown
+1. Trie Construction (Insert Words into Trie)
+You define a TrieNode class with:
+children: An array of 26 elements (each representing a lowercase English letter).
+isEndOfWord: A boolean flag to mark the end of a valid dictionary word.
+A root TrieNode is initialized.
+For each word in the dictionary:
+Start from the root.
+Iterate over each character in the word:
+Convert it into an index (idx = character - 'a').
+If the child node at idx is null, create a new TrieNode.
+If it is the last character, mark isEndOfWord = true.
+Move to the next character in the Trie.
+
+2. Dynamic Programming Approach
+Create a DP array dp[n+1] where dp[i] is true if s[i:] (substring from i to end) can be segmented using dictionary words.
+Base case: dp[n] = true, meaning an empty suffix is always valid.
+Iterate backwards from i = n-1 to 0:
+Start from the Trie root.
+Try forming words starting from s[i]:
+If the character is not found in the Trie, break.
+Move to the Trie child corresponding to s[j].
+If the node is an isEndOfWord and dp[j+1] is true, set dp[i] = true and break.
+Return dp[0].
+
+Time Complexity: O(k⋅m+n⋅m).
+Space Complexity: O(k⋅m+n).
+
+
+
+class Solution {
+    static class TrieNode{
+        TrieNode[] children;
+        boolean isEndOfWord;
+        TrieNode(){
+            children=new TrieNode[26];
+            for(int i=0;i<26;i++){
+                children[i] = null;
+            }
+            isEndOfWord=false;
+        }
+    }
+    
+    TrieNode root=new TrieNode();
+    
+    public void insert(String key){
+        TrieNode temp=root;
+        for(int i=0;i<key.length();i++){
+            int idx=key.charAt(i)-'a';
+            if(temp.children[idx]==null){
+                temp.children[idx]=new TrieNode();
+            }
+            
+            if(i==key.length()-1){
+                temp.children[idx].isEndOfWord=true;
+            }
+            
+            temp=temp.children[idx];
+        }
+    }
+    
+    
+    public boolean search(String key){
+        TrieNode temp=root;
+        for(int i=0;i<key.length();i++){
+            int idx=key.charAt(i)-'a';
+            if(temp.children[idx]==null){
+                return false;
+            }
+            
+            if(i==key.length()-1 && temp.children[idx].isEndOfWord==false){
+                return false;
+            }
+            
+            temp=temp.children[idx];
+        }
+        
+        return true;
+    }
+    
+
+    
+    public boolean wordBreak(String s, String[] dictionary) {
+        for (String word : dictionary) {
+            insert(word);
+        }
+
+        int n = s.length();
+        boolean[] dp = new boolean[n + 1];
+        dp[n] = true; // Base case
+
+        for (int i = n - 1; i >= 0; i--) { // Reverse loop
+            TrieNode temp = root;
+            for (int j = i; j < n; j++) { 
+                int idx = s.charAt(j) - 'a';
+                if (temp.children[idx] == null) break;
+                temp = temp.children[idx];
+                if (temp.isEndOfWord && dp[j + 1]) {
+                    dp[i] = true;
+                    break;
+                }
+            }
+        }
+
+        return dp[0];
+    }
+}
+

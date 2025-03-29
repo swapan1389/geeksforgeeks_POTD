@@ -1,0 +1,188 @@
+Job Sequencing Problem
+You are given two arrays: deadline[], and profit[], which represent a set of jobs, where each job is associated with a deadline, and a profit. Each job takes 1 unit of time to complete, and only one job can be scheduled at a time. You will earn the profit associated with a job only if it is completed by its deadline.
+
+Your task is to find:
+The maximum number of jobs that can be completed within their deadlines.
+The total maximum profit earned by completing those jobs.
+Examples :
+
+Input: deadline[] = [4, 1, 1, 1], profit[] = [20, 10, 40, 30]
+Output: [2, 60]
+Explanation: Job1 and Job3 can be done with maximum profit of 60 (20+40).
+
+Input: deadline[] = [2, 1, 2, 1, 1], profit[] = [100, 19, 27, 25, 15]
+Output: [2, 127]
+Explanation: Job1 and Job3 can be done with maximum profit of 127 (100+27).
+
+Input: deadline[] = [3, 1, 2, 2], profit[] = [50, 10, 20, 30]
+Output: [3, 100]
+Explanation: Job1, Job3 and Job4 can be completed with a maximum profit of 100 (50 + 20 + 30).
+
+Constraints:
+1 ≤ deadline.size() == profit.size() ≤ 10^5
+1 ≤ deadline[i] ≤ deadline.size()
+1 ≤ profit[i] ≤ 500
+
+Expected Complexities
+Time Complexity: O(n log n)Auxiliary Space: O(n)
+
+
+Solution 1: Using Job Index Sorting and Slot Allocation
+Steps in Detail:
+Find the Maximum Deadline:
+Iterate through the deadline[] array to find the maximum value.
+This helps in creating a scheduling array (chart[]) where jobs can be placed based on their deadline constraints.
+Sort Jobs by Profit (Descending Order):
+Create an array of indices (indices[]) corresponding to each job.
+Sort these indices based on the profit values in descending order using a custom comparator.
+This ensures that jobs with higher profits are considered first for scheduling.
+Create a Job Scheduling Array (chart[]):
+Initialize an array (chart[]) of size maxDeadline + 1 to keep track of job assignments.
+Fill this array with -1 to indicate that all slots are initially empty.
+Allocate Jobs to the Latest Possible Slot Before or on Their Deadline:
+Iterate through the sorted jobs:
+Extract the deadline (d) of the current job.
+Try to schedule the job at the latest available time slot (j = d to 1).
+If an empty slot is found, assign the job to that slot, increment job count, and add its profit to the total profit.
+Return the Result:
+Store the total number of jobs scheduled and the total profit in an ArrayList.
+Return this ArrayList.
+
+public ArrayList<Integer> jobSequencing(int[] deadline, int[] profit) {
+        // code here
+        int n = deadline.length;
+        ArrayList<Integer> result = new ArrayList<>();
+
+        // Find the maximum deadline
+        int maxDeadline = Arrays.stream(deadline).max().getAsInt();
+
+        // Create an array to track job slots
+        int[] chart = new int[maxDeadline + 1]; // Jobs assigned from 1 to maxDeadline
+        Arrays.fill(chart, -1); // -1 means the slot is free
+
+        // Create an array of job indices
+        Integer[] indices = new Integer[n];
+        for (int i = 0; i < n; i++) {
+            indices[i] = i;
+        }
+
+        // Sort jobs based on descending order of profit
+        Arrays.sort(indices, (i, j) -> Integer.compare(profit[j], profit[i]));
+
+        int maxCount = 0, maxProfit = 0;
+
+        for (int i = 0; i < n; i++) {
+            int jobIdx = indices[i];
+            int d = deadline[jobIdx];
+
+            // Find the closest available slot before or at deadline
+            for (int j = d; j > 0; j--) {
+                if (chart[j] == -1) { // Found an empty slot
+                    chart[j] = jobIdx; // Assign job
+                    maxCount++;
+                    maxProfit += profit[jobIdx];
+                    break;
+                }
+            }
+        }
+
+        result.add(maxCount);
+        result.add(maxProfit);
+        return result;
+    }
+
+
+
+
+Solution 2: Using Job Object Sorting and Slot Allocation
+Steps in Detail:
+Create Job Objects:
+Define a Job class with two attributes: deadline and profit.
+Iterate through the given deadline[] and profit[] arrays to create an array of Job objects.
+Sort Jobs by Profit in Descending Order:
+Use Arrays.sort() with a custom comparator to sort Job objects based on profit in descending order.
+This ensures that jobs with higher profits are prioritized for scheduling.
+Find the Maximum Deadline:
+Iterate through the jobs array to determine the maximum deadline.
+This helps in defining the range of available time slots.
+Create a Scheduling Array (slots[]):
+Initialize an array (slots[]) of size maxDeadline + 1 to track job assignments.
+Fill this array with -1 to indicate that all slots are initially free.
+Schedule Jobs in the Latest Possible Slot Before or on Their Deadline:
+Iterate through the sorted jobs:
+Extract the deadline of the current job.
+Try to schedule the job at the latest available time slot (j = deadline to 1).
+If an empty slot is found, assign the job to that slot, update job count, and add the profit to total profit.
+Return the Result:
+Store the total number of scheduled jobs and the total profit in an ArrayList.
+Return this ArrayList.
+
+class Solution {
+        static class Job {
+        int deadline, profit;
+        Job(int d, int p) {
+            this.deadline = d;
+            this.profit = p;
+        }
+    }
+
+  public ArrayList<Integer> jobSequencing(int[] deadline, int[] profit) {
+        int n = deadline.length;
+
+        // Create a job array with deadlines and profits
+        Job[] jobs = new Job[n];
+        for (int i = 0; i < n; i++) {
+            jobs[i] = new Job(deadline[i], profit[i]);
+        }
+
+        // Sort jobs in descending order of profit
+        Arrays.sort(jobs, (a, b) -> b.profit - a.profit);
+
+        // Find max deadline to determine slot array size
+        int maxDeadline = 0;
+        for (Job job : jobs) {
+            maxDeadline = Math.max(maxDeadline, job.deadline);
+        }
+
+        // Slot availability tracker (-1 means available)
+        int[] slots = new int[maxDeadline + 1];
+        Arrays.fill(slots, -1);
+
+        int maxProfit = 0, countJobs = 0;
+
+        // Try to schedule each job at its latest possible slot
+        for (Job job : jobs) {
+            for (int j = job.deadline; j > 0; j--) {
+                if (slots[j] == -1) {  // If slot is free, schedule the job
+                    slots[j] = job.profit;
+                    maxProfit += job.profit;
+                    countJobs++;
+                    break;
+                }
+            }
+        }
+
+        // Return result as an ArrayList
+        ArrayList<Integer> result = new ArrayList<>();
+        result.add(countJobs);
+        result.add(maxProfit);
+        return result;
+    }
+
+
+}
+
+
+Complexity Analysis (For Both Solutions)
+Time Complexity:
+Finding max deadline: O(n)
+Sorting jobs by profit: O(nlogn)
+Job scheduling: O(n⋅d) (worst case, where d is the max deadline)
+Overall Complexity:
+Best case: O(nlogn) (if d is small)
+Worst case: O(nlogn+n^2) (if 𝑑=𝑛)
+
+Space Complexity:
+Job storage: O(n)
+Slot array (chart[] or slots[]): O(d)
+Overall Complexity: O(n) (since d≤n)

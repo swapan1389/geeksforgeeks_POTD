@@ -1,0 +1,111 @@
+
+
+Gas Station
+There are some gas stations along a circular route. You are given two integer arrays gas[] denoted as the amount of gas present at each station and cost[] denoted as the cost of travelling to the next station. You have a car with an unlimited gas tank. You begin the journey with an empty tank from one of the gas stations. Return the index of the starting gas station if it's possible to travel around the circuit without running out of gas at any station in a clockwise direction. If there is no such starting station exists, return -1.
+Note: If a solution exists, it is guaranteed to be unique.
+
+Examples:
+
+Input: gas[] = [4, 5, 7, 4], cost[]= [6, 6, 3, 5]
+Output: 2
+Explanation: It is possible to travel around the circuit from station at index 2. Amount of gas at station 2 is (0 + 7) = 7.
+Travel to station 3. Available gas = (7 – 3 + 4) = 8.
+Travel to station 0. Available gas = (8 – 5 + 4) = 7.
+Travel to station 1. Available gas = (7 – 6 + 5) = 6.
+Return to station 2. Available gas = (6 – 6) = 0.
+
+Input: gas[] = [1, 2, 3, 4, 5], cost[] = [3, 4, 5, 1, 2]
+Output: 3
+Explanation: It is possible to travel around the circuit from station at index 3. Amount of gas at station 3 is (0 + 4) = 4.
+Travel to station 4. Available gas = 4 – 1 + 5 = 8.
+Travel to station 0. Available gas = 8 – 2 + 1 = 7.
+Travel to station 1. Available gas= 7 – 3 + 2 = 6.
+Travel to station 2. Available gas = 6 – 4 + 3 = 5.
+Travel to station 3. The cost is 5. The gas is just enough to travel back to station 3.
+
+Input: gas[] = [3, 9], cost[] = [7, 6]
+Output: -1
+Explanation: There is no gas station to start with such that you can complete the circuit.
+
+Constraints:
+1 ≤ gas.size(), cost.size() ≤ 10^6
+1 ≤ gas[i], cost[i] ≤ 10^3
+
+
+Expected Complexities
+Time Complexity: O(n)Auxiliary Space: O(1)
+
+
+
+Step-by-Step Explanation of the Algorithm:
+
+Compute Total Gas and Total Cost:
+Iterate through the gas and cost arrays to compute the sum of all available gas (totalGas) and the total travel cost (totalCost).
+If totalGas < totalCost, return -1 immediately because completing the circuit is impossible.
+Determine the Starting Index:
+Initialize startIndex = 0 (assume the journey starts from index 0).
+Initialize currentGas = 0 to track the gas level while traversing.
+
+Traverse the Stations Once to Find the Valid Start:
+Iterate through each station:
+
+Calculate currentGas += gas[i] - cost[i] to determine if there is enough fuel to move to the next station.
+If currentGas becomes negative, it means the journey cannot start from any of the previous stations.
+Set startIndex = i + 1 (next station as a potential start).
+Reset currentGas = 0 (as we restart from the new station).
+Since a valid solution is guaranteed to exist (if totalGas ≥ totalCost), the startIndex found at the end is the correct answer.
+Return the Unique Valid Start Index:
+The value of startIndex is returned as the final result.
+
+
+
+
+public int startStation(int[] gas, int[] cost) {
+        // Your code here
+        
+        int totalGas=0;
+        int totalCost=0;
+        // Calculate total gas available and total cost required
+        for(int i=0;i<gas.length;i++){
+            totalGas+=gas[i];
+            totalCost+=cost[i];
+        }
+        
+        // If total gas is less than total cost, completing the circuit is impossible
+        if(totalGas<totalCost) return -1;
+        
+        int startIndex=0;
+        int currentGas=0;
+        
+        // Traverse the stations once to find the valid starting index
+        // Since a unique solution is guaranteed, we do not need to check all stations again
+        for(int i=0;i<gas.length;i++){
+            currentGas+=gas[i]-cost[i];
+            
+            // If at any point gas becomes negative, we must start from the next station
+            // Reset the starting index and current gas count
+            if(currentGas<0){
+                startIndex=i+1; // we have choose the wrong index to startindex to i can never be result
+                currentGas=0;
+            }
+        }
+        
+        // The unique valid start index is found
+        return startIndex;
+        
+    }
+
+
+
+
+Time and Space Complexity Analysis:
+Time Complexity: O(n)
+The algorithm iterates through the gas and cost arrays twice:
+First, to compute totalGas and totalCost (O(n)).
+Second, to determine the valid starting station (O(n)).
+Since both traversals are linear, the overall complexity is O(n).
+
+Space Complexity: O(1).
+We use only a few integer variables (totalGas, totalCost, startIndex, and currentGas), all of which take constant space.
+The input arrays remain unmodified, and no additional data structures are used.
+Hence, the space complexity is O(1).
